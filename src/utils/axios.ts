@@ -30,6 +30,11 @@ const request = axios.create({
   paramsSerializer: parseParams
 });
 
+export const authRequest = axios.create({
+  baseURL: process.env.REACT_APP_LOGIN_URL,
+  paramsSerializer: parseParams
+});
+
 request.interceptors.request.use((options) => {
   const { method } = options;
 
