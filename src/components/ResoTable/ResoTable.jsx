@@ -93,16 +93,16 @@ const useStyles = makeStyles((theme) => ({
   stickyLeft: {
     width: '60px',
     position: 'sticky',
-    left: (props) => props.left ?? '0',
-    backgroundColor: 'white'
+    left: (props) => props.left ?? '0'
+    // backgroundColor: 'white'
     // borderRight: `1px solid ${theme.palette.grey[400]}`
   },
   stickyRight: {
     textAlign: 'right',
     width: '60px',
     position: 'sticky',
-    right: (props) => props.right ?? '0',
-    backgroundColor: '#fff'
+    right: (props) => props.right ?? '0'
+    // backgroundColor: '#fff'
     // borderLeft: `1px solid ${theme.palette.grey[400]}`
   },
   body: {}
@@ -159,8 +159,9 @@ const ResoTable = (
       if (!getData) return [];
       return getData({
         ...transformParamToHyphen({ ...params.filters, ..._filters }),
-        page: params.current,
-        size: params.pageSize
+        _page: params.current,
+        // size: params.pageSize
+        _limit: params.pageSize
       });
     },
     {

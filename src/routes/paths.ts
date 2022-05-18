@@ -138,7 +138,8 @@ export const PATH_DASHBOARD = {
   subjects: {
     root: path(ROOTS_DASHBOARD, '/subjects'),
     list: path(ROOTS_DASHBOARD, '/subjects'),
-    editById: (id: any) => path(ROOTS_DASHBOARD, `/subjects/${id}`)
+    editById: (id: any) => path(ROOTS_DASHBOARD, `/subjects/${id}`),
+    new: path(ROOTS_DASHBOARD, '/subjects/new')
   }
 };
 
