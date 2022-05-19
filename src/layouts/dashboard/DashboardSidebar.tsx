@@ -15,7 +15,7 @@ import useCollapseDrawer from '../../hooks/useCollapseDrawer';
 // routes
 import { PATH_DASHBOARD } from '../../routes/paths';
 //
-import adminSidebarConfig, { storeAppSidebarConfig } from './SidebarConfig';
+import adminSidebarConfig from './SidebarConfig';
 
 // ----------------------------------------------------------------------
 
@@ -103,14 +103,14 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: Dash
   const { user } = useAuth();
 
   const sidebarConfig = useMemo(() => {
-    if (user?.roles.includes('admin')) {
-      return adminSidebarConfig;
-      // eslint-disable-next-line no-else-return
-    } else if (user?.roles.includes('store-admin')) {
-      return storeAppSidebarConfig;
-    }
-    return storeAppSidebarConfig;
-  }, [user?.roles]);
+    // if (user?.roles.includes('admin')) {
+    //   return adminSidebarConfig;
+    //   // eslint-disable-next-line no-else-return
+    // } else if (user?.roles.includes('store-admin')) {
+    //   return storeAppSidebarConfig;
+    // }
+    return adminSidebarConfig;
+  }, []);
 
   const { isCollapse, collapseClick, collapseHover, onToggleCollapse, onHoverEnter, onHoverLeave } =
     useCollapseDrawer();
@@ -166,9 +166,9 @@ export default function DashboardSidebar({ isOpenSidebar, onCloseSidebar }: Dash
                 <Typography variant="subtitle2" sx={{ color: 'text.primary' }}>
                   {user?.displayName}
                 </Typography>
-                <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+                {/* <Typography variant="body2" sx={{ color: 'text.secondary' }}>
                   {user?.roles[0]}
-                </Typography>
+                </Typography> */}
               </Box>
             </AccountStyle>
           </Link>

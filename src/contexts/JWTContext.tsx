@@ -146,19 +146,19 @@ function AuthProvider({ children }: { children: ReactNode }) {
     });
   };
 
-  const login = async (user_name: string, password: string) => {
-    const response = await authRequest.post('/admin/login', {
-      user_name,
+  const login = async (email: string, password: string) => {
+    const response = await authRequest.post('/api/account/login', {
+      email,
       password
     });
-    const { access_token: accessToken, apps } = response.data;
-    const user = {
-      name: 'Admin',
-      displayName: 'Admin',
-      roles: apps?.find(
-        ({ name }: { name: string }) => name === process.env.REACT_APP_IDENTITY_API_NAME
-      ).role
-    };
+    const { access_token: accessToken, user } = response.data;
+    // const user = {
+    //   name: 'Admin',
+    //   displayName: 'Admin',
+    //   roles: apps?.find(
+    //     ({ name }: { name: string }) => name === process.env.REACT_APP_IDENTITY_API_NAME
+    //   ).role
+    // };
     setSession(accessToken);
     setUserInfo(user);
     dispatch({
