@@ -15,9 +15,10 @@ const en = {
     description: `Need help? \n Please check our docs.`,
     documentation: `documentation`,
   },
+  dashboard: `Dashboard`,
   app: `app`,
   user: `user`,
-  list: `list`,
+  list: `List`,
   edit: `edit`,
   shop: `shop`,
   blog: `blog`,
@@ -55,7 +56,7 @@ const en = {
   common: {
     save: 'Save',
     cancel: 'Cancel',
-    onfirmDeleteTitle: 'Confirm to delete',
+    confirmDeleteTitle: 'Confirm to delete',
     confirm: 'Confirm',
     all: 'All',
     available: 'Available',
@@ -63,6 +64,9 @@ const en = {
     table: {
       isAvailable: 'Status',
     },
+  },
+  resoTable: {
+    clearFilters: 'Clear filters',
   },
   pages: {
     subjects: {
