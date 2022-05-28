@@ -15,9 +15,10 @@ const vn = {
     description: `Cần giúp đỡ？\n Vui lòng xem tài liệu của chúng tôi.`,
     documentation: `tài liệu`,
   },
+  dashboard: `Trang chủ`,
   app: `ứng dụng`,
   user: `người dùng`,
-  list: `danh sách`,
+  list: `Danh sách`,
   edit: `chỉnh sửa`,
   shop: `cửa hàng`,
   blog: `blog`,
@@ -63,6 +64,9 @@ const vn = {
     table: {
       isAvailable: 'Trạng thái',
     },
+  },
+  resoTable: {
+    clearFilters: 'Xoá bộ lọc',
   },
   pages: {
     subjects: {

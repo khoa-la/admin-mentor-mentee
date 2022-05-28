@@ -21,6 +21,8 @@ import SubjectForm from './components/SubjectForm';
 import { FormProvider, useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import HeaderBreadcrumbs from 'components/HeaderBreadcrumbs';
+import Iconify from 'components/Iconify';
 
 const SubjectListPage = () => {
   const navigate = useNavigate();
@@ -66,6 +68,22 @@ const SubjectListPage = () => {
       dataIndex: 'subjectName',
     },
     {
+      title: 'Xác thực',
+      dataIndex: 'isVerified',
+      hideInSearch: true,
+      render: (isVeri: any) => (
+        <Iconify
+          icon={isVeri ? 'eva:checkmark-circle-fill' : 'eva:clock-outline'}
+          sx={{
+            width: 20,
+            height: 20,
+            color: 'success.main',
+            ...(!isVeri && { color: 'warning.main' }),
+          }}
+        />
+      ),
+    },
+    {
       title: 'Ngày',
       // dataIndex: 'createdAt',
       valueType: 'date',
@@ -91,7 +109,7 @@ const SubjectListPage = () => {
     // },
     {
       title: translate('common.table.isAvailable'),
-      dataIndex: 'is_available',
+      dataIndex: 'isAvailable',
       render: (isAvai: any) => (
         <Label color={isAvai ? 'success' : 'default'}>
           {isAvai ? translate('common.available') : translate('common.notAvailable')}
@@ -127,29 +145,36 @@ const SubjectListPage = () => {
     <Page
       title={`${translate('pages.subjects.listTitle')}`}
       isTable
+      content={
+        <HeaderBreadcrumbs
+          heading=""
+          links={[
+            { name: `${translate('dashboard')}`, href: PATH_DASHBOARD.root },
+            {
+              name: `${translate('pages.subjects.listTitle')}`,
+              href: PATH_DASHBOARD.subjects.root,
+            },
+            { name: `${translate('list')}` },
+          ]}
+        />
+      }
       actions={() => [
+        // Create
         <SubjectForm
           key={''}
           maxWidth="sm"
           onOk={async () => {
             try {
-              await handleSubmit((data: any) => subjectApi.add(data))()
-                .then(tableRef.current?.reload)
-                .then(() =>
-                  enqueueSnackbar(`Tạo môn học thành công`, {
-                    variant: 'success',
-                  })
-                )
-                .catch((err: any) => {
-                  const errMsg = get(
-                    err.response,
-                    ['data', 'message'],
-                    `Có lỗi xảy ra. Vui lòng thử lại`
-                  );
-                  enqueueSnackbar(errMsg, {
-                    variant: 'error',
-                  });
-                });
+              await handleSubmit(
+                (data: any) => subjectApi.add(data),
+                (e: any) => {
+                  throw e;
+                }
+              )();
+              enqueueSnackbar(`Tạo môn học thành công`, {
+                variant: 'success',
+              });
+              tableRef.current?.reload();
               return true;
             } catch (error) {
               enqueueSnackbar('Có lỗi', { variant: 'error' });
@@ -178,19 +203,22 @@ const SubjectListPage = () => {
             </Grid>
           </FormProvider>
         </SubjectForm>,
+
+        // Delete
+        <DeleteConfirmDialog
+          key={''}
+          open={Boolean(currentDeleteItem)}
+          onClose={() => setCurrentDeleteItem(null)}
+          onDelete={deleteSubjectHandler}
+          title={
+            <>
+              {translate('common.confirmDeleteTitle')}{' '}
+              <strong>{currentDeleteItem?.subjectName}</strong>
+            </>
+          }
+        />,
       ]}
     >
-      <DeleteConfirmDialog
-        open={Boolean(currentDeleteItem)}
-        onClose={() => setCurrentDeleteItem(null)}
-        onDelete={deleteSubjectHandler}
-        title={
-          <>
-            {translate('common.confirmDeleteTitle')}{' '}
-            <strong>{currentDeleteItem?.subjectName}</strong>
-          </>
-        }
-      />
       <Card>
         <Stack spacing={2}>
           <ResoTable

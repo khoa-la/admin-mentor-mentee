@@ -91,7 +91,7 @@ const useStyles = makeStyles((theme) => ({
     width: '60px',
     position: 'sticky',
     left: (props) => props.left ?? '0',
-    // backgroundColor: 'white'
+    backgroundColor: 'white',
     // borderRight: `1px solid ${theme.palette.grey[400]}`
   },
   stickyRight: {
@@ -99,7 +99,7 @@ const useStyles = makeStyles((theme) => ({
     width: '60px',
     position: 'sticky',
     right: (props) => props.right ?? '0',
-    // backgroundColor: '#fff'
+    backgroundColor: '#fff',
     // borderLeft: `1px solid ${theme.palette.grey[400]}`
   },
   body: {},
@@ -427,27 +427,27 @@ const ResoTable = (
 
       if (showAction) {
         const editComp = renderEdit(
-          <Tooltip title="Điều chỉnh">
-            <IconButton onClick={() => handleEdit(data)} size="large">
+          <IconButton onClick={() => handleEdit(data)} size="large">
+            <Tooltip title="Điều chỉnh">
               <Icon icon={editIcon} />
-            </IconButton>
-          </Tooltip>,
+            </Tooltip>
+          </IconButton>,
           data
         );
         const deleteComp = renderDelete(
-          <Tooltip title="Xóa">
-            <IconButton onClick={() => handleDelete(data)} sx={{ color: 'red' }} size="large">
+          <IconButton onClick={() => handleDelete(data)} sx={{ color: 'red' }} size="large">
+            <Tooltip title="Xóa">
               <Icon icon={trashIcon} />
-            </IconButton>
-          </Tooltip>,
+            </Tooltip>
+          </IconButton>,
           data
         );
         const ActionCell = mdUp ? (
           <StickyRightTableCell>
             <Stack direction="row" justifyContent="flex-end">
-              {deleteComp}
-              <Divider orientation="vertical" flexItem />
               {editComp}
+              <Divider orientation="vertical" flexItem />
+              {deleteComp}
             </Stack>
           </StickyRightTableCell>
         ) : (
@@ -477,16 +477,6 @@ const ResoTable = (
               key={`menu-edit-${data[rowKey]}`}
               id={`menu-edit-${data[rowKey]}`}
             >
-              {renderDelete(
-                <MenuItem onClick={() => handleDelete(data)} sx={{ color: 'red' }}>
-                  <ListItemIcon>
-                    <Icon icon={trashIcon} />
-                  </ListItemIcon>
-                  <ListItemText>Xóa</ListItemText>
-                </MenuItem>,
-                data
-              )}
-
               {renderEdit(
                 <MenuItem
                   onClick={() => {
@@ -497,6 +487,16 @@ const ResoTable = (
                     <Icon icon={editIcon} />
                   </ListItemIcon>
                   <ListItemText>Điều chỉnh</ListItemText>
+                </MenuItem>,
+                data
+              )}
+
+              {renderDelete(
+                <MenuItem onClick={() => handleDelete(data)} sx={{ color: 'red' }}>
+                  <ListItemIcon>
+                    <Icon icon={trashIcon} />
+                  </ListItemIcon>
+                  <ListItemText>Xóa</ListItemText>
                 </MenuItem>,
                 data
               )}
@@ -614,7 +614,7 @@ const ResoTable = (
 
   return (
     <FormProvider {...form}>
-      <Container style={{ padding: 0 }}>
+      <Container maxWidth="xl" style={{ padding: 0 }}>
         {showFilter && (
           <Box py={1} px={1}>
             <TableFilterForm controls={columns} />
