@@ -299,7 +299,7 @@ const SubjectListPage = () => {
           <FormProvider {...subjectForm}>
             <Grid container spacing={2}>
               <Grid item xs={6}>
-                <InputField fullWidth required name="subjectName" label="Tên môn học" />
+                <InputField fullWidth required name="name" label="Tên môn học" />
               </Grid>
             </Grid>
           </FormProvider>

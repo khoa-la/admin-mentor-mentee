@@ -18,6 +18,7 @@ import {
   styled,
   TextField,
   Typography,
+  Divider,
 } from '@mui/material';
 import { isBefore } from 'date-fns';
 import {
@@ -30,12 +31,15 @@ import {
   RHFSelect,
   RHFUploadSingleFile,
 } from 'components/hook-form';
-import { LoadingButton, MobileDateTimePicker } from '@mui/lab';
+import { LoadingButton, MobileDateTimePicker, DateTimePicker } from '@mui/lab';
 import ModalSubjectForm from './components/ModalSubjectForm';
 import useLocales from 'hooks/useLocales';
 import { useQuery } from 'react-query';
 import subjectApi from 'apis/subject';
 import { AutoCompleteField, SelectField } from 'components/form';
+import request from 'utils/axios';
+import Page from 'components/Page';
+import HeaderBreadcrumbs from 'components/HeaderBreadcrumbs';
 
 // ----------------------------------------------------------------------
 
@@ -108,10 +112,10 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required'),
-    minQuantity: yup.number().required('This field is required.'),
+    minQuantity: yup.number().required('Min quantity is required.'),
     maxQuantity: yup
       .number()
-      .required('This field is required.')
+      .required('Max quantity is required.')
       .when('minQuantity', (minQuantity, maxQuantity): any => {
         if (Number(maxQuantity) < Number(minQuantity)) {
           return yup.string().required('Max must be larger than Min');
@@ -125,6 +129,8 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
   const defaultValues = useMemo(
     () => ({
       name: currentCourse?.name || '',
+      // minQuantity: currentCourse?.minQuantity || 0,
+      // maxQuantity: currentCourse?.maxQuantity || 0,
       //   description: currentCourse?.description || '',
       //   images: currentCourse?.images || [],
       //   code: currentCourse?.code || '',
@@ -164,13 +170,13 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
     setValue('name', products);
   };
 
-  const { data, isLoading } = useQuery('subjectForCourse', () => subjectApi.get);
-  console.log(data);
-
-  const extraOptions = SUBJECT.map((c) => ({ label: c.name, value: c.id }));
-  const getOpObj = (option: any) => {
+  const { data, isLoading } = useQuery('subjectForCourse', () =>
+    request.get('/subjects').then((res) => res?.data.data)
+  );
+  const subjectOptions = data?.map((c: any) => ({ label: c.name, value: c.id }));
+  const getSubject = (option: any) => {
     if (!option) return option;
-    if (!option.value) return extraOptions.find((opt) => opt.value === option);
+    if (!option.value) return subjectOptions.find((opt: any) => opt.value === option);
     return option;
   };
 
@@ -222,80 +228,129 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
   };
 
   return (
-    <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
-      <Grid container spacing={3}>
-        <Grid item xs={12} md={8}>
-          <Card sx={{ p: 3 }}>
-            <Stack spacing={3}>
-              <RHFTextField name="name" label="Tên môn học" />
+    <>
+      <Page
+        title={`Khoá học`}
+        isTable
+        content={
+          <HeaderBreadcrumbs
+            heading=""
+            links={[
+              { name: `${translate('dashboard')}`, href: PATH_DASHBOARD.root },
+              {
+                name: `Khoá học`,
+                href: PATH_DASHBOARD.courses.root,
+              },
+              { name: `Tạo khoá học` },
+            ]}
+          />
+        }
+      >
+        <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={8}>
+              <Card sx={{ p: 3 }}>
+                <Stack spacing={3}>
+                  <RHFTextField name="name" label="Tên khoá học" />
 
-              <Grid xs={12} display="flex">
-                <RHFTextField name="slug" label="Slug" sx={{ pr: 2 }} />
-                <RHFTextField name="slug" label="Giảng viên" />
-              </Grid>
-
-              <div>
-                <LabelStyle>Description</LabelStyle>
-                <RHFEditor simple name="description" />
-              </div>
-
-              <div>
-                <LabelStyle>Images</LabelStyle>
-                <RHFUploadSingleFile
-                  name="cover"
-                  accept="image/*"
-                  maxSize={3145728}
-                  onDrop={handleDrop}
-                />
-              </div>
-            </Stack>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Stack spacing={3}>
-            <Card sx={{ p: 3 }}>
-              <RHFSwitch name="inStock" label="In stock" />
-
-              <Controller
-                name="startDate"
-                control={control}
-                render={({ field }) => (
-                  <MobileDateTimePicker
-                    {...field}
-                    label="Start date"
-                    inputFormat="dd/MM/yyyy hh:mm a"
-                    renderInput={(params) => <TextField {...params} fullWidth />}
+                  <AutoCompleteField
+                    options={subjectOptions}
+                    getOptionLabel={(value: any) => getSubject(value)?.label || ''}
+                    isOptionEqualToValue={(option: any, value: any) => {
+                      if (!option) return option;
+                      return option.value === getSubject(value)?.value;
+                    }}
+                    transformValue={(opt: any) => opt?.value}
+                    size="large"
+                    type="text"
+                    label={'Chọn môn học'}
+                    name="subjectId"
+                    fullWidth
                   />
-                )}
-              />
 
-              <Controller
-                name="finishDate"
-                control={control}
-                render={({ field }) => (
-                  <MobileDateTimePicker
-                    {...field}
-                    label="End date"
-                    inputFormat="dd/MM/yyyy hh:mm a"
-                    renderInput={(params) => (
-                      <TextField
-                        {...params}
+                  <Grid xs={12} display="flex">
+                    <AutoCompleteField
+                      disabled={false}
+                      options={['A', 'B']}
+                      name="mentorId"
+                      size="large"
+                      type="text"
+                      label="Giảng viên"
+                      fullWidth
+                    />
+                    <Divider variant="middle" />
+                    <AutoCompleteField
+                      disabled={false}
+                      options={['Online', 'Offline']}
+                      name=""
+                      size="large"
+                      type="text"
+                      label="Hình thức giảng dạy"
+                      fullWidth
+                    />
+                  </Grid>
+
+                  <div>
+                    <LabelStyle>Description</LabelStyle>
+                    <RHFEditor simple name="description" />
+                  </div>
+
+                  <div>
+                    <LabelStyle>Images</LabelStyle>
+                    <RHFUploadSingleFile
+                      name="cover"
+                      accept="image/*"
+                      maxSize={3145728}
+                      onDrop={handleDrop}
+                    />
+                  </div>
+                </Stack>
+              </Card>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <Stack spacing={3}>
+                <Card sx={{ p: 3 }}>
+                  {/* <RHFSwitch name="inStock" label="In stock" /> */}
+
+                  <RHFTextField name="location" label="Địa chỉ" sx={{ pb: 3 }} />
+
+                  <RHFTextField name="slug" label="Slug" sx={{ pb: 3 }} />
+
+                  <Grid xs={12} display="flex">
+                    <Grid xs={12}>
+                      <AutoCompleteField
+                        disabled={false}
+                        options={[1, 2, 3, 4, 5, 6]}
+                        name="minQuantity"
+                        size="large"
+                        type="text"
+                        label="Số học viên tối thiểu"
                         fullWidth
-                        error={!!isDateError}
-                        helperText={isDateError && 'End date must be later than start date'}
                       />
-                    )}
-                  />
-                )}
-              />
+                    </Grid>
 
-              <Stack spacing={3} mt={2}>
-                <RHFTextField name="code" label="Product Code" />
+                    <Divider variant="middle" />
 
-                <RHFTextField name="sku" label="Product SKU" />
+                    <Grid xs={12}>
+                      <AutoCompleteField
+                        disabled={false}
+                        options={[1, 2, 3, 4, 5, 6]}
+                        name="maxQuantity"
+                        size="large"
+                        type="text"
+                        label="Số học viên tối đa"
+                        fullWidth
+                      />
+                    </Grid>
+                  </Grid>
 
-                <div>
+                  <Stack spacing={3} mt={2}>
+                    {/* <RHFTextField name="code" label="Product Code" /> */}
+
+                    {/* <RHFTextField name="sku" label="Product SKU" /> */}
+
+                    {/* <div>
                   <LabelStyle>Gender</LabelStyle>
                   <RHFRadioGroup
                     name="gender"
@@ -304,9 +359,9 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
                       '& .MuiFormControlLabel-root': { mr: 4 },
                     }}
                   />
-                </div>
+                </div> */}
 
-                <RHFSelect name="category" label="Category">
+                    {/* <RHFSelect name="category" label="Category">
                   {CATEGORY_OPTION.map((category) => (
                     <optgroup key={category.group} label={category.group}>
                       {category.classify.map((classify) => (
@@ -316,40 +371,59 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
                       ))}
                     </optgroup>
                   ))}
-                </RHFSelect>
+                </RHFSelect> */}
 
-                <AutoCompleteField
-                  disabled={false}
-                  options={[1, 2, 3, 4, 5, 6]}
-                  name="minQuantity"
-                  size="large"
-                  type="text"
-                  label="Số học viên tối thiểu"
-                  fullWidth
-                />
+                    <Grid xs={12}>
+                      <Controller
+                        name="startDate"
+                        control={control}
+                        render={({ field }) => (
+                          <DateTimePicker
+                            {...field}
+                            label="Ngày bắt đầu"
+                            inputFormat="dd/MM/yyyy hh:mm a"
+                            renderInput={(params) => <TextField {...params} fullWidth />}
+                          />
+                        )}
+                      />
+                    </Grid>
 
-                <AutoCompleteField
-                  disabled={false}
-                  options={[1, 2, 3, 4, 5, 6]}
-                  name="maxQuantity"
-                  size="large"
-                  type="text"
-                  label="Số học viên tối đa"
-                  fullWidth
-                />
+                    <Grid xs={12}>
+                      <Controller
+                        name="finishDate"
+                        control={control}
+                        render={({ field }) => (
+                          <DateTimePicker
+                            {...field}
+                            label="Ngày kết thúc"
+                            inputFormat="dd/MM/yyyy hh:mm a"
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                fullWidth
+                                error={!!isDateError}
+                                helperText={
+                                  isDateError && 'Ngày kết thúc phải lớn hơn ngày bắt đầu'
+                                }
+                              />
+                            )}
+                          />
+                        )}
+                      />
+                    </Grid>
 
-                <RHFTextField
-                  size="medium"
-                  type="number"
-                  name="price"
-                  label="Giá"
-                  onChange={(event) => setValue(`price`, event.target.value)}
-                  InputProps={{
-                    startAdornment: <InputAdornment position="start">$</InputAdornment>,
-                  }}
-                />
+                    <RHFTextField
+                      size="medium"
+                      type="number"
+                      name="price"
+                      label="Giá"
+                      onChange={(event) => setValue(`price`, event.target.value)}
+                      InputProps={{
+                        startAdornment: <InputAdornment position="start">$</InputAdornment>,
+                      }}
+                    />
 
-                {/* <Autocomplete
+                    {/* <Autocomplete
                   disablePortal
                   id="combo-box-demo"
                   options={MIN_QUANTITY}
@@ -357,7 +431,7 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
                   renderInput={(params) => <TextField {...params} label="Số lượng tối đa" />}
                 /> */}
 
-                {/* <SelectField
+                    {/* <SelectField
                   key={'min_quantity'}
                   label={'Số lượng tối thiểu'}
                   name={'minQuantity'}
@@ -383,7 +457,7 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
                   ))}
                 </SelectField> */}
 
-                {/* <Controller
+                    {/* <Controller
                   name="name"
                   control={control}
                   render={({ field }) => (
@@ -407,10 +481,10 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
                     />
                   )}
                 /> */}
-              </Stack>
-            </Card>
+                  </Stack>
+                </Card>
 
-            {/* <Card sx={{ p: 3 }}>
+                {/* <Card sx={{ p: 3 }}>
               <Stack spacing={3} mb={2}>
                 <RHFTextField
                   name="price"
@@ -442,13 +516,20 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
               <RHFSwitch name="taxes" label="Price includes taxes" />
             </Card> */}
 
-            <LoadingButton type="submit" variant="contained" size="large" loading={isSubmitting}>
-              {!isEdit ? 'Create Product' : 'Save Changes'}
-            </LoadingButton>
-          </Stack>
-        </Grid>
-      </Grid>
-    </FormProvider>
+                <LoadingButton
+                  type="submit"
+                  variant="contained"
+                  size="large"
+                  loading={isSubmitting}
+                >
+                  {!isEdit ? 'Tạo môn học' : 'Lưu thay đổi'}
+                </LoadingButton>
+              </Stack>
+            </Grid>
+          </Grid>
+        </FormProvider>
+      </Page>
+    </>
   );
 }
 
