@@ -156,9 +156,8 @@ const ResoTable = (
       if (!getData) return [];
       return getData({
         ...transformParamToHyphen({ ...params.filters, ..._filters }),
-        _page: params.current,
-        // size: params.pageSize
-        _limit: params.pageSize,
+        page: params.current,
+        size: params.pageSize,
       });
     },
     {

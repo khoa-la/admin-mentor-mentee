@@ -1,6 +1,6 @@
 export type TSubject = {
   id: number;
-  subjectName: string;
+  name: string;
   createdDate?: Date;
   updatedDate?: Date;
   publishedDate?: Date;

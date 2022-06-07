@@ -54,6 +54,13 @@ const navConfig = [
         icon: ICONS.blog,
       },
 
+      // COURSE
+      {
+        title: 'course',
+        path: PATH_DASHBOARD.courses.list,
+        icon: ICONS.blog,
+      },
+
       // USER
       {
         title: 'user',

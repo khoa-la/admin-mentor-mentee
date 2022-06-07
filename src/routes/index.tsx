@@ -100,6 +100,17 @@ export default function Router() {
           ],
         },
         {
+          path: 'courses',
+          children: [
+            { path: '', element: <CourseListPage /> },
+            {
+              path: 'new',
+              element: <CourseNewEditForm />,
+            },
+            { path: ':id', element: <CourseNewEditForm /> },
+          ],
+        },
+        {
           path: 'user',
           children: [
             { element: <Navigate to="/dashboard/user/profile" replace />, index: true },
@@ -249,3 +260,7 @@ const Page404 = Loadable(lazy(() => import('../pages/Page404')));
 
 // SUBJECT
 const SubjectListPage = Loadable(lazy(() => import('../pages/Subjects')));
+
+// COURSE
+const CourseListPage = Loadable(lazy(() => import('../pages/Courses')));
+const CourseNewEditForm = Loadable(lazy(() => import('../pages/Courses/CourseNewEditForm')));

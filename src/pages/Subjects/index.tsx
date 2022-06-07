@@ -2,7 +2,18 @@
 import plusFill from '@iconify/icons-eva/plus-fill';
 import { Icon } from '@iconify/react';
 // material
-import { Button, Card, Grid, Stack, Typography } from '@mui/material';
+import {
+  Button,
+  Card,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Grid,
+  Stack,
+  Typography,
+} from '@mui/material';
 import DeleteConfirmDialog from 'components/DeleteConfirmDialog';
 import { InputField, SelectField } from 'components/form';
 import Label from 'components/Label';
@@ -11,7 +22,7 @@ import ResoTable from 'components/ResoTable/ResoTable';
 import useLocales from 'hooks/useLocales';
 import { get } from 'lodash';
 import { useSnackbar } from 'notistack';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 // components
 import { useNavigate } from 'react-router-dom';
 import subjectApi from 'apis/subject';
@@ -23,23 +34,47 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import HeaderBreadcrumbs from 'components/HeaderBreadcrumbs';
 import Iconify from 'components/Iconify';
+import { useQuery } from 'react-query';
+import { useParams } from 'react-router';
+import LoadingAsyncButton from 'components/LoadingAsyncButton';
 
 const SubjectListPage = () => {
   const navigate = useNavigate();
   const { translate } = useLocales();
   const { enqueueSnackbar } = useSnackbar();
   const [currentDeleteItem, setCurrentDeleteItem] = useState<TSubject | null>(null);
+  const [currentUpdateItem, setCurrentUpdateItem] = useState(null);
   const tableRef = useRef<any>();
+
+  const [isUpdate, setIsUpdate] = useState(false);
+  const { id } = useParams();
+  console.log(id);
+
+  const { data, isLoading } = useQuery(
+    ['subject', currentUpdateItem],
+    () => subjectApi.getSubjectById(Number(currentUpdateItem)),
+    {
+      select: (res) => res.data,
+    }
+  );
+  console.log(data);
 
   const schema = yup.object().shape({
     subjectName: yup.string().required('Vui lòng nhập tên môn học'),
   });
-  const subjectForm = useForm({
+  const subjectForm = useForm<TSubject>({
     resolver: yupResolver(schema),
     shouldUnregister: true,
+    defaultValues: { ...data },
   });
 
-  const { handleSubmit } = subjectForm;
+  const { handleSubmit, control, reset } = subjectForm;
+
+  useEffect(() => {
+    if (data) {
+      reset(data);
+    }
+  }, [data, reset]);
 
   const deleteSubjectHandler = () =>
     subjectApi
@@ -57,6 +92,23 @@ const SubjectListPage = () => {
           variant: 'error',
         });
       });
+
+  const updateSubjectHandler = (subject: TSubject) =>
+    subjectApi
+      .update(subject?.id!, subject!)
+      .then(tableRef.current?.reload)
+      .then(() =>
+        enqueueSnackbar(`Cập nhât thành công`, {
+          variant: 'success',
+        })
+      )
+      .catch((err: any) => {
+        const errMsg = get(err.response, ['data', 'message'], `Có lỗi xảy ra. Vui lòng thử lại`);
+        enqueueSnackbar(errMsg, {
+          variant: 'error',
+        });
+      });
+
   const columns = [
     {
       title: 'STT',
@@ -65,36 +117,36 @@ const SubjectListPage = () => {
     },
     {
       title: 'Tên môn học',
-      dataIndex: 'subjectName',
+      dataIndex: 'name',
     },
-    {
-      title: 'Xác thực',
-      dataIndex: 'isVerified',
-      hideInSearch: true,
-      render: (isVeri: any) => (
-        <Iconify
-          icon={isVeri ? 'eva:checkmark-circle-fill' : 'eva:clock-outline'}
-          sx={{
-            width: 20,
-            height: 20,
-            color: 'success.main',
-            ...(!isVeri && { color: 'warning.main' }),
-          }}
-        />
-      ),
-    },
-    {
-      title: 'Ngày',
-      // dataIndex: 'createdAt',
-      valueType: 'date',
-      hideInTable: true,
-    },
-    {
-      title: 'Giờ',
-      // dataIndex: 'createdAt',
-      valueType: 'time',
-      hideInTable: true,
-    },
+    // {
+    //   title: 'Xác thực',
+    //   dataIndex: 'isVerified',
+    //   hideInSearch: true,
+    //   render: (isVeri: any) => (
+    //     <Iconify
+    //       icon={isVeri ? 'eva:checkmark-circle-fill' : 'eva:clock-outline'}
+    //       sx={{
+    //         width: 20,
+    //         height: 20,
+    //         color: 'success.main',
+    //         ...(!isVeri && { color: 'warning.main' }),
+    //       }}
+    //     />
+    //   ),
+    // },
+    // {
+    //   title: 'Ngày',
+    //   // dataIndex: 'createdAt',
+    //   valueType: 'date',
+    //   hideInTable: true,
+    // },
+    // {
+    //   title: 'Giờ',
+    //   // dataIndex: 'createdAt',
+    //   valueType: 'time',
+    //   hideInTable: true,
+    // },
     // {
     //   title: 'Ngày update',
     //   dataIndex: 'updatedDate',
@@ -107,38 +159,38 @@ const SubjectListPage = () => {
     //   valueType: 'datetime',
     //   hideInSearch: true
     // },
-    {
-      title: translate('common.table.isAvailable'),
-      dataIndex: 'isAvailable',
-      render: (isAvai: any) => (
-        <Label color={isAvai ? 'success' : 'default'}>
-          {isAvai ? translate('common.available') : translate('common.notAvailable')}
-        </Label>
-      ),
-      renderFormItem: () => (
-        <SelectField
-          fullWidth
-          sx={{ minWidth: '150px' }}
-          options={[
-            {
-              label: translate('common.all'),
-              value: '',
-            },
-            {
-              label: translate('common.available'),
-              value: 'true',
-            },
-            {
-              label: translate('common.unAvailable'),
-              value: 'false',
-            },
-          ]}
-          name="is-available"
-          size="small"
-          label={translate('common.table.isAvailable')}
-        />
-      ),
-    },
+    // {
+    //   title: translate('common.table.isAvailable'),
+    //   dataIndex: 'isAvailable',
+    //   render: (isAvai: any) => (
+    //     <Label color={isAvai ? 'success' : 'default'}>
+    //       {isAvai ? translate('common.available') : translate('common.notAvailable')}
+    //     </Label>
+    //   ),
+    //   renderFormItem: () => (
+    //     <SelectField
+    //       fullWidth
+    //       sx={{ minWidth: '150px' }}
+    //       options={[
+    //         {
+    //           label: translate('common.all'),
+    //           value: '',
+    //         },
+    //         {
+    //           label: translate('common.available'),
+    //           value: 'true',
+    //         },
+    //         {
+    //           label: translate('common.unAvailable'),
+    //           value: 'false',
+    //         },
+    //       ]}
+    //       name="is-available"
+    //       size="small"
+    //       label={translate('common.table.isAvailable')}
+    //     />
+    //   ),
+    // },
   ];
 
   return (
@@ -185,7 +237,7 @@ const SubjectListPage = () => {
           trigger={
             <Button
               key="create-subject"
-              onClick={() => {
+              onClick={(subject: any) => {
                 navigate(PATH_DASHBOARD.subjects.new);
               }}
               variant="contained"
@@ -212,8 +264,7 @@ const SubjectListPage = () => {
           onDelete={deleteSubjectHandler}
           title={
             <>
-              {translate('common.confirmDeleteTitle')}{' '}
-              <strong>{currentDeleteItem?.subjectName}</strong>
+              {translate('common.confirmDeleteTitle')} <strong>{currentDeleteItem?.name}</strong>
             </>
           }
         />,
@@ -224,13 +275,66 @@ const SubjectListPage = () => {
           <ResoTable
             rowKey="id"
             ref={tableRef}
-            onEdit={(subject: any) => navigate(`${PATH_DASHBOARD.subjects.root}/${subject.id}`)}
+            onEdit={(subject: any) => {
+              navigate(`${PATH_DASHBOARD.subjects.root}/${subject.id}`);
+              setIsUpdate(true);
+              setCurrentUpdateItem(subject?.id);
+            }}
             getData={subjectApi.getSubjects}
             onDelete={setCurrentDeleteItem}
             columns={columns}
           />
         </Stack>
       </Card>
+
+      <Dialog
+        open={isUpdate}
+        fullWidth
+        onClose={() => setIsUpdate(false)}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">Cập nhật môn học</DialogTitle>
+        <DialogContent dividers>
+          <FormProvider {...subjectForm}>
+            <Grid container spacing={2}>
+              <Grid item xs={6}>
+                <InputField fullWidth required name="subjectName" label="Tên môn học" />
+              </Grid>
+            </Grid>
+          </FormProvider>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setIsUpdate(false)} variant="outlined" color="inherit">
+            {translate('common.cancel')}
+          </Button>
+          <LoadingAsyncButton
+            variant="contained"
+            onClick={async () => {
+              try {
+                await handleSubmit(
+                  (data: any) => subjectApi.update(Number(id), data),
+                  (e: any) => {
+                    throw e;
+                  }
+                )();
+                enqueueSnackbar(`Cập nhật môn học thành công`, {
+                  variant: 'success',
+                });
+                setIsUpdate(false);
+                reset(data);
+                tableRef.current?.reload();
+                return true;
+              } catch (error) {
+                enqueueSnackbar('Có lỗi', { variant: 'error' });
+                return false;
+              }
+            }}
+          >
+            {translate('common.save')}
+          </LoadingAsyncButton>
+        </DialogActions>
+      </Dialog>
     </Page>
   );
 };
