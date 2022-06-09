@@ -74,7 +74,7 @@ export default function UserTableRow({
       <TableCell align="left">
         <Label
           variant={theme.palette.mode === 'light' ? 'ghost' : 'filled'}
-          color={(status === 'banned' && 'error') || 'success'}
+          color={(status === 'pending' && 'warning')||(status === 'banned' && 'error') || 'success'}
           sx={{ textTransform: 'capitalize' }}
         >
           {status}

@@ -11,11 +11,8 @@ import { RHFSelect, RHFTextField } from '../../../../components/hook-form';
 // ----------------------------------------------------------------------
 
 const SERVICE_OPTIONS = [
-  'full stack development',
-  'backend development',
-  'ui design',
-  'ui/ux design',
-  'front end development',
+  'mentor',
+      'mentee'
 ];
 
 export default function InvoiceNewEditDetails() {
