@@ -3,6 +3,7 @@ import plusFill from '@iconify/icons-eva/plus-fill';
 import { Icon } from '@iconify/react';
 // material
 import {
+  Box,
   Button,
   Card,
   Dialog,
@@ -12,6 +13,7 @@ import {
   DialogTitle,
   Grid,
   Stack,
+  Tab,
   Typography,
 } from '@mui/material';
 import DeleteConfirmDialog from 'components/DeleteConfirmDialog';
@@ -28,7 +30,7 @@ import { useNavigate } from 'react-router-dom';
 import courseApi from 'apis/course';
 import { PATH_DASHBOARD } from 'routes/paths';
 import { TCourse } from 'types/course';
-import { FormProvider, useForm } from 'react-hook-form';
+import { FormProvider, useForm, UseFormReturn } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import HeaderBreadcrumbs from 'components/HeaderBreadcrumbs';
@@ -36,13 +38,26 @@ import Iconify from 'components/Iconify';
 import { useQuery } from 'react-query';
 import { useParams } from 'react-router';
 import LoadingAsyncButton from 'components/LoadingAsyncButton';
+import { TabContext, TabList } from '@mui/lab';
+
+const STATUS_OPTIONS = ['Tất cả', 'Đã duyệt', 'Chờ duyệt', 'Đã huỷ'];
 
 const CourseListPage = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('1');
   const { translate } = useLocales();
   const { enqueueSnackbar } = useSnackbar();
   const [currentItem, setCurrentItem] = useState<TCourse | null>(null);
-  const tableRef = useRef<any>();
+  const tableRef = useRef<{ reload: Function; formControl: UseFormReturn<any> }>();
+
+  const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+    // ref.current?.formControl.setValue(
+    //   'ispublished',
+    //   newValue === '1' ? 1 : newValue === '2' ? 0 : 2
+    // );
+    setActiveTab(newValue);
+    // ref.current?.formControl.setValue('tabindex', newValue);
+  };
 
   const [isUpdate, setIsUpdate] = useState(false);
   const { id } = useParams();
@@ -78,7 +93,7 @@ const CourseListPage = () => {
     courseApi
       .delete(currentItem?.id!)
       .then(() => setCurrentItem(null))
-      .then(tableRef.current?.reload)
+      .then(() => tableRef.current?.reload)
       .then(() =>
         enqueueSnackbar(`Xóa thành công`, {
           variant: 'success',
@@ -94,7 +109,7 @@ const CourseListPage = () => {
   const updateCourseHandler = (course: TCourse) =>
     courseApi
       .update(course?.id!, course!)
-      .then(tableRef.current?.reload)
+      .then(() => tableRef.current?.reload)
       .then(() =>
         enqueueSnackbar(`Cập nhât thành công`, {
           variant: 'success',
@@ -222,19 +237,28 @@ const CourseListPage = () => {
       ]}
     >
       <Card>
-        <Stack spacing={2}>
-          <ResoTable
-            rowKey="id"
-            ref={tableRef}
-            onEdit={(subject: any) => {
-              navigate(`${PATH_DASHBOARD.subjects.root}/${subject.id}`);
-              setIsUpdate(true);
-            }}
-            getData={courseApi.getCourses}
-            onDelete={setCurrentItem}
-            columns={columns}
-          />
-        </Stack>
+        <TabContext value={activeTab}>
+          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+            <TabList onChange={handleChange} aria-label="lab API tabs example">
+              <Tab disableRipple label="Khoá học đã duyệt" value="1" />
+              <Tab label="Khoá học chờ duyệt" value="2" />
+              <Tab label="Khoá học đã huỷ" value="3" />
+            </TabList>
+          </Box>
+          <Stack spacing={2}>
+            <ResoTable
+              rowKey="id"
+              ref={tableRef}
+              onEdit={(subject: any) => {
+                navigate(`${PATH_DASHBOARD.subjects.root}/${subject.id}`);
+                setIsUpdate(true);
+              }}
+              getData={courseApi.getCourses}
+              onDelete={setCurrentItem}
+              columns={columns}
+            />
+          </Stack>
+        </TabContext>
       </Card>
     </Page>
   );

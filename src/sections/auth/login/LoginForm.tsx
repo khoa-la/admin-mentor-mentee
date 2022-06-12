@@ -5,7 +5,8 @@ import { Link as RouterLink } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 // @mui
-import { Link, Stack, Alert, IconButton, InputAdornment } from '@mui/material';
+import { Link, Stack, Alert, IconButton, InputAdornment, Button } from '@mui/material';
+import GoogleIcon from '@mui/icons-material/Google';
 import { LoadingButton } from '@mui/lab';
 // routes
 import { PATH_AUTH } from '../../../routes/paths';
@@ -15,6 +16,7 @@ import useIsMountedRef from '../../../hooks/useIsMountedRef';
 // components
 import Iconify from '../../../components/Iconify';
 import { FormProvider, RHFTextField, RHFCheckbox } from '../../../components/hook-form';
+import LoginWithGoogle from './LoginWithGoogle';
 
 // ----------------------------------------------------------------------
 
@@ -108,6 +110,7 @@ export default function LoginForm() {
       >
         Login
       </LoadingButton>
+      <LoginWithGoogle />
     </FormProvider>
   );
 }

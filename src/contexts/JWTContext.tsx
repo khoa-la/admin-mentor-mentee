@@ -1,9 +1,10 @@
-import { createContext, ReactNode, useEffect, useReducer } from 'react';
+import { createContext, ReactNode, useEffect, useReducer, useState } from 'react';
 // utils
 import { axiosInstance } from '../utils/axios';
 import { isValidToken, setSession } from '../utils/jwt';
 // @types
 import { ActionMap, AuthState, AuthUser, JWTContextType } from '../@types/auth';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 
 // ----------------------------------------------------------------------
 
@@ -79,6 +80,7 @@ type AuthProviderProps = {
 
 function AuthProvider({ children }: AuthProviderProps) {
   const [state, dispatch] = useReducer(JWTReducer, initialState);
+  const [user, setUser] = useState({});
 
   useEffect(() => {
     const initialize = async () => {
@@ -88,8 +90,10 @@ function AuthProvider({ children }: AuthProviderProps) {
         if (accessToken && isValidToken(accessToken)) {
           setSession(accessToken);
 
-          const response = await axiosInstance.get('/api/account/my-account');
-          const { user } = response.data;
+          const response = await axiosInstance.post('/authenticate/login', {
+            idToken: accessToken,
+          });
+          const { user } = response?.data;
 
           dispatch({
             type: Types.Initial,
@@ -139,6 +143,32 @@ function AuthProvider({ children }: AuthProviderProps) {
     });
   };
 
+  // googleProvider
+  const googleProvider = new GoogleAuthProvider();
+  // auth
+  const auth = getAuth();
+
+  const loginWithGoogle = () => {
+    signInWithPopup(auth, googleProvider).then(async (result) => {
+      const resultUser: any = result.user;
+      setUser(resultUser);
+      const response = await axiosInstance.post(`/authenticate/login`, {
+        idToken: resultUser.accessToken,
+      });
+      const { accessToken, user } = response?.data?.data;
+
+      setSession(accessToken);
+      localStorage.setItem('user', user);
+
+      dispatch({
+        type: Types.Login,
+        payload: {
+          user,
+        },
+      });
+    });
+  };
+
   const register = async (email: string, password: string, firstName: string, lastName: string) => {
     const response = await axiosInstance.post('/api/account/register', {
       email,
@@ -171,6 +201,8 @@ function AuthProvider({ children }: AuthProviderProps) {
         login,
         logout,
         register,
+        user,
+        loginWithGoogle,
       }}
     >
       {children}

@@ -45,7 +45,7 @@ request.interceptors.request.use((options) => {
   const { method } = options;
 
   if (method === 'put' || method === 'post') {
-    Object.assign(options.headers, {
+    Object.assign(options.headers!, {
       'Content-Type': 'application/json;charset=UTF-8',
     });
   }

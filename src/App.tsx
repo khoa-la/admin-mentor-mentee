@@ -1,4 +1,6 @@
 // routes
+import { FIREBASE_API } from 'config';
+import { getApps, initializeApp } from 'firebase/app';
 import { QueryClient, QueryClientProvider } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import MotionLazyContainer from './components/animate/MotionLazyContainer';
@@ -13,6 +15,10 @@ import Router from './routes';
 import ThemeProvider from './theme';
 
 // ----------------------------------------------------------------------
+
+if (!getApps().length) {
+  initializeApp(FIREBASE_API);
+}
 
 const queryClient = new QueryClient();
 
