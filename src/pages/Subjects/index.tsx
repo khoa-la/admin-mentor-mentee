@@ -43,7 +43,7 @@ const SubjectListPage = () => {
   const { translate } = useLocales();
   const { enqueueSnackbar } = useSnackbar();
   const [currentDeleteItem, setCurrentDeleteItem] = useState<TSubject | null>(null);
-  const [currentUpdateItem, setCurrentUpdateItem] = useState(null);
+  const [currentUpdateItem, setCurrentUpdateItem] = useState<TSubject | null>(null);
   const tableRef = useRef<any>();
 
   const [isUpdate, setIsUpdate] = useState(false);

@@ -41,6 +41,7 @@ import request from 'utils/axios';
 import Page from 'components/Page';
 import HeaderBreadcrumbs from 'components/HeaderBreadcrumbs';
 import courseApi from 'apis/course';
+import { get } from 'lodash';
 
 // ----------------------------------------------------------------------
 
@@ -169,13 +170,40 @@ function CourseNewEditForm({ isEdit }: Props) {
     setValue('name', products);
   };
 
-  const { data, isLoading } = useQuery('subjectForCourse', () =>
+  const { data: subjects } = useQuery('subjectForCourse', () =>
     request.get('/subjects').then((res) => res?.data.data)
   );
-  const subjectOptions = data?.map((c: any) => ({ label: c.name, value: c.id }));
+  const subjectOptions = subjects?.map((c: any) => ({ label: c.name, value: c.id }));
   const getSubject = (option: any) => {
     if (!option) return option;
-    if (!option.value) return subjectOptions.find((opt: any) => opt.value === option);
+    if (!option.value) return subjectOptions?.find((opt: any) => opt.value === option);
+    return option;
+  };
+
+  const { data: mentors } = useQuery(['mentorForCourse'], () =>
+    request.get('/admin/users?role-id=2').then((res) => res?.data.data)
+  );
+  const mentorOptions = mentors?.map((c: any) => ({ label: c.fullName, value: c.id }));
+  const getMentor = (option: any) => {
+    if (!option) return option;
+    if (!option.value) return mentorOptions?.find((opt: any) => opt.value === option);
+    return option;
+  };
+
+  const courseTypes = [
+    {
+      id: 1,
+      name: 'Ngắn hạn',
+    },
+    {
+      id: 2,
+      name: 'Dài hạn',
+    },
+  ];
+  const courseTypeOptions = courseTypes?.map((c: any) => ({ label: c.name, value: c.id }));
+  const getCourseType = (option: any) => {
+    if (!option) return option;
+    if (!option.value) return courseTypeOptions?.find((opt: any) => opt.value === option);
     return option;
   };
 
@@ -185,13 +213,22 @@ function CourseNewEditForm({ isEdit }: Props) {
     }
   }, [course, methods]);
 
-  const onSubmit = async (data: TCourse) => {
+  const onSubmit = async (course: TCourse) => {
     try {
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      reset();
-      enqueueSnackbar(!isEdit ? 'Create success!' : 'Update success!');
-      console.log(data);
-      navigate(PATH_DASHBOARD.courses.list);
+      await courseApi
+        .update(course!)
+        .then(() =>
+          enqueueSnackbar(`Cập nhât thành công`, {
+            variant: 'success',
+          })
+        )
+        .then(() => navigate(PATH_DASHBOARD.courses.list))
+        .catch((err: any) => {
+          const errMsg = get(err.response, ['data', 'message'], `Có lỗi xảy ra. Vui lòng thử lại`);
+          enqueueSnackbar(errMsg, {
+            variant: 'error',
+          });
+        });
     } catch (error) {
       console.error(error);
     }
@@ -224,24 +261,24 @@ function CourseNewEditForm({ isEdit }: Props) {
 
   return (
     <>
-      <Page
-        title={`Khoá học`}
-        isTable
-        content={
-          <HeaderBreadcrumbs
-            heading=""
-            links={[
-              { name: `${translate('dashboard')}`, href: PATH_DASHBOARD.root },
-              {
-                name: `Khoá học`,
-                href: PATH_DASHBOARD.courses.root,
-              },
-              { name: isView ? `Chi tiết` : `Cập nhật khoá học` },
-            ]}
-          />
-        }
-      >
-        <FormProvider {...methods} methods={methods} onSubmit={handleSubmit(onSubmit)}>
+      <FormProvider {...methods} methods={methods} onSubmit={handleSubmit(onSubmit)}>
+        <Page
+          title={`Khoá học`}
+          isTable
+          content={
+            <HeaderBreadcrumbs
+              heading=""
+              links={[
+                { name: `${translate('dashboard')}`, href: PATH_DASHBOARD.root },
+                {
+                  name: `Khoá học`,
+                  href: PATH_DASHBOARD.courses.root,
+                },
+                { name: isView ? `Chi tiết` : `Cập nhật khoá học` },
+              ]}
+            />
+          }
+        >
           <Grid container spacing={3}>
             <Grid item xs={12} md={8}>
               <Card sx={{ p: 3 }}>
@@ -267,7 +304,13 @@ function CourseNewEditForm({ isEdit }: Props) {
                   <Grid xs={12} display="flex">
                     <AutoCompleteField
                       disabled={isView}
-                      options={['A', 'B']}
+                      options={mentorOptions}
+                      getOptionLabel={(value: any) => getMentor(value)?.label || ''}
+                      isOptionEqualToValue={(option: any, value: any) => {
+                        if (!option) return option;
+                        return option.value === getMentor(value)?.value;
+                      }}
+                      transformValue={(opt: any) => opt?.value}
                       name="mentorId"
                       size="large"
                       type="text"
@@ -277,8 +320,14 @@ function CourseNewEditForm({ isEdit }: Props) {
                     <Divider variant="middle" />
                     <AutoCompleteField
                       disabled={isView}
-                      options={['Online', 'Offline']}
-                      name=""
+                      options={courseTypeOptions}
+                      getOptionLabel={(value: any) => getCourseType(value)?.label}
+                      isOptionEqualToValue={(option: any, value: any) => {
+                        if (!option) return option;
+                        return option.value === getCourseType(value);
+                      }}
+                      transformValue={(opt: any) => opt?.value}
+                      name="type"
                       size="large"
                       type="text"
                       label="Hình thức giảng dạy"
@@ -318,7 +367,7 @@ function CourseNewEditForm({ isEdit }: Props) {
                     <Grid xs={12}>
                       <AutoCompleteField
                         disabled={isView}
-                        options={[1, 2, 3, 4, 5, 6]}
+                        options={Array.from({ length: 100 }, (_, index) => index + 1)}
                         name="minQuantity"
                         size="large"
                         type="text"
@@ -332,7 +381,7 @@ function CourseNewEditForm({ isEdit }: Props) {
                     <Grid xs={12}>
                       <AutoCompleteField
                         disabled={isView}
-                        options={[1, 2, 3, 4, 5, 6]}
+                        options={Array.from({ length: 100 }, (_, index) => index + 1)}
                         name="maxQuantity"
                         size="large"
                         type="text"
@@ -416,7 +465,7 @@ function CourseNewEditForm({ isEdit }: Props) {
                       type="number"
                       name="price"
                       label="Giá"
-                      onChange={(event) => setValue(`price`, event.target.value)}
+                      onChange={(event) => setValue(`price`, Number(event.target.value))}
                       InputProps={{
                         startAdornment: <InputAdornment position="start">$</InputAdornment>,
                       }}
@@ -531,8 +580,8 @@ function CourseNewEditForm({ isEdit }: Props) {
               </Stack>
             </Grid>
           </Grid>
-        </FormProvider>
-      </Page>
+        </Page>
+      </FormProvider>
     </>
   );
 }

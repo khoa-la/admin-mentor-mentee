@@ -3,7 +3,7 @@ export type TCourse = {
   name: string;
   minQuantity: number;
   maxQuantity: number;
-  price: string;
+  price: number;
   slug: string;
   imageUrl: string[];
   startDate: string;
@@ -15,7 +15,7 @@ export type TCourse = {
   locationType: number;
   location: string;
   desciption: string;
-  totalRating: string;
+  totalRating: number;
   mentorId: number;
   subjectId: number;
 };

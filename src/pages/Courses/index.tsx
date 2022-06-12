@@ -91,7 +91,13 @@ const CourseListPage = () => {
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     ref.current?.formControl.setValue(
       'status',
-      newValue === '1' ? STATUS.Start : newValue === '2' ? STATUS.Pending : STATUS.CancelNotEnough
+      newValue === '2'
+        ? STATUS.Start
+        : newValue === '3'
+        ? STATUS.Pending
+        : newValue === '4'
+        ? STATUS.CancelNotEnough
+        : ''
     );
     setActiveTab(newValue);
     ref.current?.formControl.setValue('tabindex', newValue);
@@ -145,7 +151,7 @@ const CourseListPage = () => {
 
   const updateCourseHandler = (course: TCourse) =>
     courseApi
-      .update(course?.id!, course!)
+      .update(course!)
       .then(() => ref.current?.reload)
       .then(() =>
         enqueueSnackbar(`Cập nhât thành công`, {
@@ -168,58 +174,6 @@ const CourseListPage = () => {
     {
       title: 'Tên khoá học',
       dataIndex: 'name',
-    },
-    // {
-    //   title: 'Xác thực',
-    //   dataIndex: 'isVerified',
-    //   hideInSearch: true,
-    //   render: (isVeri: any) => (
-    //     <Iconify
-    //       icon={isVeri ? 'eva:checkmark-circle-fill' : 'eva:clock-outline'}
-    //       sx={{
-    //         width: 20,
-    //         height: 20,
-    //         color: 'success.main',
-    //         ...(!isVeri && { color: 'warning.main' }),
-    //       }}
-    //     />
-    //   ),
-    // },
-    {
-      title: 'Ngày',
-      // dataIndex: 'createdAt',
-      valueType: 'date',
-      hideInTable: true,
-    },
-    {
-      title: 'Giờ',
-      // dataIndex: 'createdAt',
-      valueType: 'time',
-      hideInTable: true,
-    },
-    {
-      title: 'Ngày bắt đầu',
-      dataIndex: 'startDate',
-      valueType: 'datetime',
-      hideInSearch: true,
-    },
-    {
-      title: 'Ngày kết thúc',
-      dataIndex: 'finishDate',
-      valueType: 'datetime',
-      hideInSearch: true,
-    },
-    // {
-    //   title: 'Ngày cập nhật',
-    //   dataIndex: 'updateDate',
-    //   valueType: 'datetime',
-    //   hideInSearch: true,
-    // },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'createDate',
-      valueType: 'datetime',
-      hideInSearch: true,
     },
     {
       title: translate('common.table.isAvailable'),
@@ -272,6 +226,59 @@ const CourseListPage = () => {
           label={translate('common.table.isAvailable')}
         />
       ),
+      hideInSearch: activeTab === '2' ? false : true,
+    },
+    // {
+    //   title: 'Xác thực',
+    //   dataIndex: 'isVerified',
+    //   hideInSearch: true,
+    //   render: (isVeri: any) => (
+    //     <Iconify
+    //       icon={isVeri ? 'eva:checkmark-circle-fill' : 'eva:clock-outline'}
+    //       sx={{
+    //         width: 20,
+    //         height: 20,
+    //         color: 'success.main',
+    //         ...(!isVeri && { color: 'warning.main' }),
+    //       }}
+    //     />
+    //   ),
+    // },
+    // {
+    //   title: 'Ngày',
+    //   dataIndex: 'createdAt',
+    //   valueType: 'date',
+    //   hideInTable: true,
+    // },
+    // {
+    //   title: 'Giờ',
+    //   dataIndex: 'createdAt',
+    //   valueType: 'time',
+    //   hideInTable: true,
+    // },
+    {
+      title: 'Ngày bắt đầu',
+      dataIndex: 'startDate',
+      valueType: 'datetime',
+      hideInSearch: true,
+    },
+    {
+      title: 'Ngày kết thúc',
+      dataIndex: 'finishDate',
+      valueType: 'datetime',
+      hideInSearch: true,
+    },
+    // {
+    //   title: 'Ngày cập nhật',
+    //   dataIndex: 'updateDate',
+    //   valueType: 'datetime',
+    //   hideInSearch: true,
+    // },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'createDate',
+      valueType: 'datetime',
+      hideInSearch: true,
     },
   ];
 
@@ -327,6 +334,16 @@ const CourseListPage = () => {
               <Tab
                 disableRipple
                 label={
+                  <Badge color="success" badgeContent={allData?.length}>
+                    Tất cả
+                  </Badge>
+                }
+                value="1"
+                sx={{ px: 2 }}
+              />
+              <Tab
+                disableRipple
+                label={
                   <Badge
                     color="success"
                     badgeContent={
@@ -336,7 +353,7 @@ const CourseListPage = () => {
                     Đã duyệt
                   </Badge>
                 }
-                value="1"
+                value="2"
                 sx={{ px: 2 }}
               />
               <Tab
@@ -345,7 +362,7 @@ const CourseListPage = () => {
                     Chờ duyệt
                   </Badge>
                 }
-                value="2"
+                value="3"
                 sx={{ px: 2 }}
               />
               <Tab
@@ -354,7 +371,7 @@ const CourseListPage = () => {
                     Đã huỷ
                   </Badge>
                 }
-                value="3"
+                value="4"
                 sx={{ px: 2 }}
               />
             </TabList>

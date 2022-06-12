@@ -505,19 +505,21 @@ const ResoTable = (
               key={`menu-edit-${data[rowKey]}`}
               id={`menu-edit-${data[rowKey]}`}
             >
-              {renderView(
-                <MenuItem
-                  onClick={() => {
-                    handleView(data);
-                  }}
-                >
-                  <ListItemIcon>
-                    <Icon icon={editIcon} />
-                  </ListItemIcon>
-                  <ListItemText>Chi tiết</ListItemText>
-                </MenuItem>,
-                data
-              )}
+              {onView
+                ? renderView(
+                    <MenuItem
+                      onClick={() => {
+                        handleView(data);
+                      }}
+                    >
+                      <ListItemIcon>
+                        <Icon icon={eyeFill} />
+                      </ListItemIcon>
+                      <ListItemText>Chi tiết</ListItemText>
+                    </MenuItem>,
+                    data
+                  )
+                : ''}
 
               {renderEdit(
                 <MenuItem
