@@ -107,6 +107,10 @@ export default function Router() {
               path: 'new',
               element: <CourseNewEditForm />,
             },
+            {
+              path: ':id/view',
+              element: <CourseNewEditForm />,
+            },
             { path: ':id', element: <CourseNewEditForm /> },
           ],
         },

@@ -1,4 +1,5 @@
 import editIcon from '@iconify/icons-eva/edit-outline';
+import eyeFill from '@iconify/icons-eva/eye-fill';
 import moreVerticalFill from '@iconify/icons-eva/more-vertical-fill';
 import trashIcon from '@iconify/icons-eva/trash-outline';
 import { Icon } from '@iconify/react';
@@ -113,6 +114,7 @@ const ResoTable = (
     filters = null,
     onEdit = null,
     onDelete = null,
+    onView = null,
     rowKey = 'id',
     checkboxSelection = false,
     onChangeSelection = () => null,
@@ -130,6 +132,7 @@ const ResoTable = (
     defaultFilters = {},
     renderEdit = (dom) => dom,
     renderDelete = (dom) => dom,
+    renderView = (dom) => dom,
   } = props || {};
   const classes = useStyles();
   const { enqueueSnackbar } = useSnackbar();
@@ -210,6 +213,16 @@ const ResoTable = (
       onChangeSelection(_selectedIds, selectionData);
     }
   }, [_selectedIds, onChangeSelection, data?.list, rowKey]);
+
+  const handleView = useCallback(
+    (data) => {
+      if (typeof onEdit === 'function') {
+        onView(data);
+      }
+      closeEditMenu();
+    },
+    [onView]
+  );
 
   const handleEdit = useCallback(
     (data) => {
@@ -441,9 +454,25 @@ const ResoTable = (
           </IconButton>,
           data
         );
+        const viewComp = renderView(
+          <IconButton onClick={() => handleView(data)} size="large">
+            <Tooltip title="Chi tiết">
+              <Icon icon={eyeFill} />
+            </Tooltip>
+          </IconButton>,
+          data
+        );
         const ActionCell = mdUp ? (
           <StickyRightTableCell>
             <Stack direction="row" justifyContent="flex-end">
+              {onView ? (
+                <>
+                  {viewComp}
+                  <Divider orientation="vertical" flexItem />
+                </>
+              ) : (
+                ''
+              )}
               {editComp}
               <Divider orientation="vertical" flexItem />
               {deleteComp}
@@ -476,6 +505,20 @@ const ResoTable = (
               key={`menu-edit-${data[rowKey]}`}
               id={`menu-edit-${data[rowKey]}`}
             >
+              {renderView(
+                <MenuItem
+                  onClick={() => {
+                    handleView(data);
+                  }}
+                >
+                  <ListItemIcon>
+                    <Icon icon={editIcon} />
+                  </ListItemIcon>
+                  <ListItemText>Chi tiết</ListItemText>
+                </MenuItem>,
+                data
+              )}
+
               {renderEdit(
                 <MenuItem
                   onClick={() => {

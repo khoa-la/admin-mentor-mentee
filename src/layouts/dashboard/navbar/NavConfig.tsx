@@ -4,6 +4,7 @@ import { PATH_DASHBOARD } from '../../../routes/paths';
 import Label from '../../../components/Label';
 import Iconify from '../../../components/Iconify';
 import SvgIconStyle from '../../../components/SvgIconStyle';
+import { Badge } from '@mui/material';
 
 // ----------------------------------------------------------------------
 
@@ -59,6 +60,7 @@ const navConfig = [
         title: 'course',
         path: PATH_DASHBOARD.courses.list,
         icon: ICONS.blog,
+        info: <Badge color="error" badgeContent={2} sx={{ mr: 14 }} />,
       },
 
       // USER

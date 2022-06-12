@@ -93,7 +93,7 @@ function AuthProvider({ children }: AuthProviderProps) {
           const response = await axiosInstance.post('/authenticate/login', {
             idToken: accessToken,
           });
-          const { user } = response?.data;
+          const { user } = response?.data?.data;
 
           dispatch({
             type: Types.Initial,
@@ -158,7 +158,6 @@ function AuthProvider({ children }: AuthProviderProps) {
       const { accessToken, user } = response?.data?.data;
 
       setSession(accessToken);
-      localStorage.setItem('user', user);
 
       dispatch({
         type: Types.Login,

@@ -1,7 +1,7 @@
 import { useSnackbar } from 'notistack';
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import * as yup from 'yup';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { TCourse } from 'types/course';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { Controller, useForm } from 'react-hook-form';
@@ -40,6 +40,7 @@ import { AutoCompleteField, SelectField } from 'components/form';
 import request from 'utils/axios';
 import Page from 'components/Page';
 import HeaderBreadcrumbs from 'components/HeaderBreadcrumbs';
+import courseApi from 'apis/course';
 
 // ----------------------------------------------------------------------
 
@@ -100,15 +101,28 @@ const LabelStyle = styled(Typography)(({ theme }) => ({
 
 type Props = {
   isEdit: boolean;
-  currentCourse?: TCourse;
 };
 
-function CourseNewEditForm({ isEdit, currentCourse }: Props) {
+function CourseNewEditForm({ isEdit }: Props) {
   const navigate = useNavigate();
 
   const { translate } = useLocales();
 
   const { enqueueSnackbar } = useSnackbar();
+
+  const [isView, setIsView] = useState(false);
+
+  const { id } = useParams();
+  const { pathname } = useLocation();
+  const view = pathname.includes('view');
+
+  useEffect(() => {
+    if (view) {
+      setIsView(true);
+    } else {
+      setIsView(false);
+    }
+  }, [view, setIsView]);
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required'),
@@ -126,30 +140,15 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
     // price: yup.number().moreThan(0, 'Price should not be $0.00'),
   });
 
-  const defaultValues = useMemo(
-    () => ({
-      name: currentCourse?.name || '',
-      // minQuantity: currentCourse?.minQuantity || 0,
-      // maxQuantity: currentCourse?.maxQuantity || 0,
-      //   description: currentCourse?.description || '',
-      //   images: currentCourse?.images || [],
-      //   code: currentCourse?.code || '',
-      //   sku: currentCourse?.sku || '',
-      //   price: currentCourse?.price || 0,
-      //   priceSale: currentCourse?.priceSale || 0,
-      //   tags: currentCourse?.tags || [TAGS_OPTION[0]],
-      //   inStock: true,
-      //   taxes: true,
-      //   gender: currentCourse?.gender || GENDER_OPTION[2].value,
-      //   category: currentCourse?.category || CATEGORY_OPTION[0].classify[1],
-    }),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [currentCourse]
-  );
+  const { data: course } = useQuery(['course', id], () => courseApi.getCourseById(Number(id)), {
+    select: (res) => res.data,
+  });
 
   const methods = useForm<TCourse>({
     resolver: yupResolver(schema),
-    defaultValues,
+    defaultValues: {
+      ...course,
+    },
   });
 
   const {
@@ -181,14 +180,10 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
   };
 
   useEffect(() => {
-    if (isEdit && currentCourse) {
-      reset(defaultValues);
+    if (course) {
+      methods.reset(course as TCourse);
     }
-    if (!isEdit) {
-      reset(defaultValues);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isEdit, currentCourse]);
+  }, [course, methods]);
 
   const onSubmit = async (data: TCourse) => {
     try {
@@ -241,17 +236,17 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
                 name: `Khoá học`,
                 href: PATH_DASHBOARD.courses.root,
               },
-              { name: `Tạo khoá học` },
+              { name: isView ? `Chi tiết` : `Cập nhật khoá học` },
             ]}
           />
         }
       >
-        <FormProvider methods={methods} onSubmit={handleSubmit(onSubmit)}>
+        <FormProvider {...methods} methods={methods} onSubmit={handleSubmit(onSubmit)}>
           <Grid container spacing={3}>
             <Grid item xs={12} md={8}>
               <Card sx={{ p: 3 }}>
                 <Stack spacing={3}>
-                  <RHFTextField name="name" label="Tên khoá học" />
+                  <RHFTextField name="name" label="Tên khoá học" disabled={isView} />
 
                   <AutoCompleteField
                     options={subjectOptions}
@@ -266,11 +261,12 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
                     label={'Chọn môn học'}
                     name="subjectId"
                     fullWidth
+                    disabled={isView}
                   />
 
                   <Grid xs={12} display="flex">
                     <AutoCompleteField
-                      disabled={false}
+                      disabled={isView}
                       options={['A', 'B']}
                       name="mentorId"
                       size="large"
@@ -280,7 +276,7 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
                     />
                     <Divider variant="middle" />
                     <AutoCompleteField
-                      disabled={false}
+                      disabled={isView}
                       options={['Online', 'Offline']}
                       name=""
                       size="large"
@@ -298,10 +294,11 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
                   <div>
                     <LabelStyle>Images</LabelStyle>
                     <RHFUploadSingleFile
-                      name="cover"
+                      name="imageUrl"
                       accept="image/*"
                       maxSize={3145728}
                       onDrop={handleDrop}
+                      disabled={isView}
                     />
                   </div>
                 </Stack>
@@ -313,14 +310,14 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
                 <Card sx={{ p: 3 }}>
                   {/* <RHFSwitch name="inStock" label="In stock" /> */}
 
-                  <RHFTextField name="location" label="Địa chỉ" sx={{ pb: 3 }} />
+                  <RHFTextField name="location" label="Địa chỉ" sx={{ pb: 3 }} disabled={isView} />
 
-                  <RHFTextField name="slug" label="Slug" sx={{ pb: 3 }} />
+                  <RHFTextField name="slug" label="Slug" sx={{ pb: 3 }} disabled={isView} />
 
                   <Grid xs={12} display="flex">
                     <Grid xs={12}>
                       <AutoCompleteField
-                        disabled={false}
+                        disabled={isView}
                         options={[1, 2, 3, 4, 5, 6]}
                         name="minQuantity"
                         size="large"
@@ -334,7 +331,7 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
 
                     <Grid xs={12}>
                       <AutoCompleteField
-                        disabled={false}
+                        disabled={isView}
                         options={[1, 2, 3, 4, 5, 6]}
                         name="maxQuantity"
                         size="large"
@@ -383,6 +380,7 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
                             label="Ngày bắt đầu"
                             inputFormat="dd/MM/yyyy hh:mm a"
                             renderInput={(params) => <TextField {...params} fullWidth />}
+                            disabled={isView}
                           />
                         )}
                       />
@@ -407,6 +405,7 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
                                 }
                               />
                             )}
+                            disabled={isView}
                           />
                         )}
                       />
@@ -421,6 +420,7 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
                       InputProps={{
                         startAdornment: <InputAdornment position="start">$</InputAdornment>,
                       }}
+                      disabled={isView}
                     />
 
                     {/* <Autocomplete
@@ -516,14 +516,18 @@ function CourseNewEditForm({ isEdit, currentCourse }: Props) {
               <RHFSwitch name="taxes" label="Price includes taxes" />
             </Card> */}
 
-                <LoadingButton
-                  type="submit"
-                  variant="contained"
-                  size="large"
-                  loading={isSubmitting}
-                >
-                  {!isEdit ? 'Tạo môn học' : 'Lưu thay đổi'}
-                </LoadingButton>
+                {!isView ? (
+                  <LoadingButton
+                    type="submit"
+                    variant="contained"
+                    size="large"
+                    loading={isSubmitting}
+                  >
+                    Lưu thay đổi
+                  </LoadingButton>
+                ) : (
+                  ''
+                )}
               </Stack>
             </Grid>
           </Grid>

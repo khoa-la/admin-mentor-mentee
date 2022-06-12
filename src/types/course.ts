@@ -7,8 +7,9 @@ export type TCourse = {
   slug: string;
   imageUrl: string[];
   startDate: string;
-  createDate: string;
   finishDate: string;
+  createDate: string;
+  updateDate?: string;
   status: number;
   type: number;
   locationType: number;
