@@ -473,9 +473,15 @@ const ResoTable = (
               ) : (
                 ''
               )}
-              {editComp}
-              <Divider orientation="vertical" flexItem />
-              {deleteComp}
+              {onEdit ? (
+                <>
+                  {editComp}
+                  <Divider orientation="vertical" flexItem />
+                </>
+              ) : (
+                ''
+              )}
+              {onDelete ? <>{deleteComp}</> : ''}
             </Stack>
           </StickyRightTableCell>
         ) : (
@@ -660,7 +666,7 @@ const ResoTable = (
     <FormProvider {...form}>
       <Container maxWidth="xl" style={{ padding: 0 }}>
         {showFilter && (
-          <Box py={1} px={1}>
+          <Box pt={3} px={1}>
             <TableFilterForm controls={columns} />
           </Box>
         )}

@@ -68,6 +68,12 @@ export const PATH_DASHBOARD = {
     new: path(ROOTS_DASHBOARD, '/courses/new'),
     view: (id: string) => path(ROOTS_DASHBOARD, `/courses/${id}/view`),
   },
+  users: {
+    root: path(ROOTS_DASHBOARD, '/users'),
+    list: path(ROOTS_DASHBOARD, '/users'),
+    editById: (id: string) => path(ROOTS_DASHBOARD, `/users/${id}`),
+    new: path(ROOTS_DASHBOARD, '/users/new'),
+  },
   user: {
     root: path(ROOTS_DASHBOARD, '/user'),
     new: path(ROOTS_DASHBOARD, '/user/new'),

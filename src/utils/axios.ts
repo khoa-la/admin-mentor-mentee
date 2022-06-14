@@ -39,12 +39,13 @@ const parseParams = (params: any) => {
 const request = axios.create({
   baseURL: process.env.REACT_APP_BASE_URL,
   paramsSerializer: parseParams,
+  headers: { Authorization: `Bearer ${localStorage.getItem('accessToken')}` },
 });
 
 request.interceptors.request.use((options) => {
   const { method } = options;
 
-  if (method === 'put' || method === 'post') {
+  if (method === 'put' || method === 'post' || method === 'get') {
     Object.assign(options.headers!, {
       'Content-Type': 'application/json;charset=UTF-8',
     });

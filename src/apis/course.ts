@@ -2,7 +2,7 @@ import { TCourse } from 'types/course';
 import { generateAPIWithPaging } from './utils';
 import request from 'utils/axios';
 
-const getCourses = (params?: any) => request.get('/courses', { params });
+const getCourses = (params?: any) => request.get('/admin/courses', { params });
 
 const getCourseById = (id: number, params?: any) => request.get(`/courses/${id}`, { params });
 

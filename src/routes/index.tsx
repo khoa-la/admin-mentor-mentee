@@ -115,6 +115,17 @@ export default function Router() {
           ],
         },
         {
+          path: 'users',
+          children: [
+            { path: '', element: <UserListPage /> },
+            {
+              path: 'new',
+              element: <UserEditForm />,
+            },
+            { path: ':id', element: <UserEditForm /> },
+          ],
+        },
+        {
           path: 'user',
           children: [
             { element: <Navigate to="/dashboard/user/profile" replace />, index: true },
@@ -268,3 +279,7 @@ const SubjectListPage = Loadable(lazy(() => import('../pages/Subjects')));
 // COURSE
 const CourseListPage = Loadable(lazy(() => import('../pages/Courses')));
 const CourseNewEditForm = Loadable(lazy(() => import('../pages/Courses/CourseNewEditForm')));
+
+// USER
+const UserListPage = Loadable(lazy(() => import('../pages/Users')));
+const UserEditForm = Loadable(lazy(() => import('../pages/Users/UserEditForm')));
