@@ -126,6 +126,17 @@ export default function Router() {
           ],
         },
         {
+          path: 'majors',
+          children: [
+            { path: '', element: <MajorListPage /> },
+            {
+              path: 'new',
+              element: <MajorCreatePage />,
+            },
+            { path: ':id', element: <UserEditForm /> },
+          ],
+        },
+        {
           path: 'user',
           children: [
             { element: <Navigate to="/dashboard/user/profile" replace />, index: true },
@@ -283,3 +294,7 @@ const CourseNewEditForm = Loadable(lazy(() => import('../pages/Courses/CourseNew
 // USER
 const UserListPage = Loadable(lazy(() => import('../pages/Users')));
 const UserEditForm = Loadable(lazy(() => import('../pages/Users/UserEditForm')));
+
+// MAJOR
+const MajorListPage = Loadable(lazy(() => import('../pages/Majors')));
+const MajorCreatePage = Loadable(lazy(() => import('../pages/Majors/CreateMajor')));

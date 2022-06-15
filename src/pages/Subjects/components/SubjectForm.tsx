@@ -16,11 +16,21 @@ interface Props extends Omit<Partial<DialogProps>, 'title'> {
   onCancle?: () => void;
   onOk: () => Promise<any>;
   children?: ReactNode;
+  subject_id?: number;
 }
 
-const SubjectForm = ({ trigger, onOk: onSubmit, title, children, ...others }: Props) => {
+const SubjectForm = ({
+  subject_id,
+  trigger,
+  onOk: onSubmit,
+  title,
+  children,
+  ...others
+}: Props) => {
   const [open, setOpen] = useState(false);
   const { translate } = useLocales();
+
+  const isUpdate = !!subject_id;
 
   return (
     <>

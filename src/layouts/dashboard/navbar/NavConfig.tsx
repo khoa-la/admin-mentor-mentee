@@ -48,11 +48,11 @@ const navConfig = [
   {
     subheader: 'management',
     items: [
-      // SUBJECT
+      // USER
       {
-        title: 'subject',
-        path: PATH_DASHBOARD.subjects.list,
-        icon: ICONS.menuBook,
+        title: 'user',
+        path: PATH_DASHBOARD.users.list,
+        icon: ICONS.user,
       },
 
       // COURSE
@@ -62,11 +62,17 @@ const navConfig = [
         icon: ICONS.libraryBook,
       },
 
-      // USER
+      // SUBJECT
       {
-        title: 'user',
-        path: PATH_DASHBOARD.users.list,
-        icon: ICONS.user,
+        title: 'subject',
+        path: PATH_DASHBOARD.subjects.list,
+        icon: ICONS.menuBook,
+      },
+      // MAJOR
+      {
+        title: 'major',
+        path: PATH_DASHBOARD.majors.list,
+        icon: ICONS.menuBook,
       },
     ],
   },

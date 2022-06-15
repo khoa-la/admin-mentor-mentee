@@ -76,8 +76,8 @@ const SubjectListPage = () => {
     }
   }, [data, reset]);
 
-  const deleteSubjectHandler = () =>
-    subjectApi
+  const deleteSubjectHandler = async () => {
+    await subjectApi
       .delete(currentDeleteItem?.id!)
       .then(() => setCurrentDeleteItem(null))
       .then(tableRef.current?.reload)
@@ -92,10 +92,11 @@ const SubjectListPage = () => {
           variant: 'error',
         });
       });
+  };
 
-  const updateSubjectHandler = (subject: TSubject) =>
-    subjectApi
-      .update(subject?.id!, subject!)
+  const updateSubjectHandler = async (subject: TSubject) => {
+    await subjectApi
+      .update(subject!)
       .then(tableRef.current?.reload)
       .then(() =>
         enqueueSnackbar(`Cập nhât thành công`, {
@@ -108,6 +109,7 @@ const SubjectListPage = () => {
           variant: 'error',
         });
       });
+  };
 
   const columns = [
     {
@@ -313,7 +315,7 @@ const SubjectListPage = () => {
             onClick={async () => {
               try {
                 await handleSubmit(
-                  (data: any) => subjectApi.update(Number(id), data),
+                  (data: any) => subjectApi.update(data),
                   (e: any) => {
                     throw e;
                   }
