@@ -44,37 +44,12 @@ const SubjectListPage = () => {
   const { enqueueSnackbar } = useSnackbar();
   const [currentDeleteItem, setCurrentDeleteItem] = useState<TSubject | null>(null);
   const [currentUpdateItem, setCurrentUpdateItem] = useState<TSubject | null>(null);
+  const [formModal, setFormModal] = useState(false);
   const tableRef = useRef<any>();
 
   const [isUpdate, setIsUpdate] = useState(false);
   const { id } = useParams();
   console.log(id);
-
-  const { data, isLoading } = useQuery(
-    ['subject', currentUpdateItem],
-    () => subjectApi.getSubjectById(Number(currentUpdateItem)),
-    {
-      select: (res) => res.data,
-    }
-  );
-  console.log(data);
-
-  const schema = yup.object().shape({
-    subjectName: yup.string().required('Vui lòng nhập tên môn học'),
-  });
-  const subjectForm = useForm<TSubject>({
-    resolver: yupResolver(schema),
-    shouldUnregister: true,
-    defaultValues: { ...data },
-  });
-
-  const { handleSubmit, control, reset } = subjectForm;
-
-  useEffect(() => {
-    if (data) {
-      reset(data);
-    }
-  }, [data, reset]);
 
   const deleteSubjectHandler = async () => {
     await subjectApi
@@ -94,12 +69,29 @@ const SubjectListPage = () => {
       });
   };
 
+  const addSubjectHandler = async (subject: TSubject) => {
+    await subjectApi
+      .add(subject!)
+      .then(tableRef.current?.reload)
+      .then(() =>
+        enqueueSnackbar(`Tạo thành công`, {
+          variant: 'success',
+        })
+      )
+      .catch((err: any) => {
+        const errMsg = get(err.response, ['data', 'message'], `Có lỗi xảy ra. Vui lòng thử lại`);
+        enqueueSnackbar(errMsg, {
+          variant: 'error',
+        });
+      });
+  };
+
   const updateSubjectHandler = async (subject: TSubject) => {
     await subjectApi
       .update(subject!)
       .then(tableRef.current?.reload)
       .then(() =>
-        enqueueSnackbar(`Cập nhât thành công`, {
+        enqueueSnackbar(`Cập nhật thành công`, {
           variant: 'success',
         })
       )
@@ -213,74 +205,54 @@ const SubjectListPage = () => {
         />
       }
       actions={() => [
-        // Create
-        <SubjectForm
-          key={''}
-          maxWidth="sm"
-          onOk={async () => {
-            try {
-              await handleSubmit(
-                (data: any) => subjectApi.add(data),
-                (e: any) => {
-                  throw e;
-                }
-              )();
-              enqueueSnackbar(`Tạo môn học thành công`, {
-                variant: 'success',
-              });
-              tableRef.current?.reload();
-              return true;
-            } catch (error) {
-              enqueueSnackbar('Có lỗi', { variant: 'error' });
-              return false;
-            }
+        <Button
+          key="create-subject"
+          onClick={() => {
+            navigate(PATH_DASHBOARD.subjects.new);
+            setFormModal(true);
+            setCurrentUpdateItem(null);
           }}
-          title={<Typography variant="h3">Tạo môn học</Typography>}
-          trigger={
-            <Button
-              key="create-subject"
-              onClick={(subject: any) => {
-                navigate(PATH_DASHBOARD.subjects.new);
-              }}
-              variant="contained"
-              startIcon={<Icon icon={plusFill} />}
-            >
-              {translate('pages.subjects.addBtn')}
-            </Button>
-          }
+          variant="contained"
+          startIcon={<Icon icon={plusFill} />}
         >
-          <FormProvider {...subjectForm}>
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <InputField fullWidth required name="subjectName" label="Tên môn học" />
-              </Grid>
-            </Grid>
-          </FormProvider>
-        </SubjectForm>,
-
-        // Delete
-        <DeleteConfirmDialog
-          key={''}
-          open={Boolean(currentDeleteItem)}
-          onClose={() => setCurrentDeleteItem(null)}
-          onDelete={deleteSubjectHandler}
-          title={
-            <>
-              {translate('common.confirmDeleteTitle')} <strong>{currentDeleteItem?.name}</strong>
-            </>
-          }
-        />,
+          {translate('pages.subjects.addBtn')}
+        </Button>,
       ]}
     >
+      <SubjectForm
+        open={formModal}
+        subject_id={currentUpdateItem?.id}
+        onAdd={addSubjectHandler}
+        onEdit={updateSubjectHandler}
+        onClose={() => setFormModal(false)}
+      >
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <InputField fullWidth required name="name" label="Tên môn học" />
+          </Grid>
+        </Grid>
+      </SubjectForm>
+      <DeleteConfirmDialog
+        key={''}
+        open={Boolean(currentDeleteItem)}
+        onClose={() => setCurrentDeleteItem(null)}
+        onDelete={deleteSubjectHandler}
+        title={
+          <>
+            {translate('common.confirmDeleteTitle')} <strong>{currentDeleteItem?.name}</strong>
+          </>
+        }
+      />
       <Card>
         <Stack spacing={2}>
           <ResoTable
             rowKey="id"
             ref={tableRef}
-            onEdit={(subject: any) => {
+            onEdit={(subject: TSubject) => {
               navigate(`${PATH_DASHBOARD.subjects.root}/${subject.id}`);
               setIsUpdate(true);
-              setCurrentUpdateItem(subject?.id);
+              setFormModal(true);
+              setCurrentUpdateItem(subject);
             }}
             getData={subjectApi.getSubjects}
             onDelete={setCurrentDeleteItem}
@@ -289,7 +261,7 @@ const SubjectListPage = () => {
         </Stack>
       </Card>
 
-      <Dialog
+      {/* <Dialog
         open={isUpdate}
         fullWidth
         onClose={() => setIsUpdate(false)}
@@ -336,7 +308,7 @@ const SubjectListPage = () => {
             {translate('common.save')}
           </LoadingAsyncButton>
         </DialogActions>
-      </Dialog>
+      </Dialog> */}
     </Page>
   );
 };
