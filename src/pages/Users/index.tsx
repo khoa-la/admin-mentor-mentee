@@ -189,7 +189,9 @@ const UserListPage = () => {
       title: 'Vai trò',
       dataIndex: 'roleId',
       render: (role: any) => (
-        <Label>{role === 1 ? 'Giảng viên' : role === 2 ? 'Học viên' : 'Admin'}</Label>
+        <Label color={role === 1 ? 'info' : role === 2 ? 'primary' : 'default'}>
+          {role === 1 ? 'Giảng viên' : role === 2 ? 'Học viên' : 'Admin'}
+        </Label>
       ),
       renderFormItem: () => (
         <SelectField

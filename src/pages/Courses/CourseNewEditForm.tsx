@@ -45,55 +45,6 @@ import { get } from 'lodash';
 
 // ----------------------------------------------------------------------
 
-const GENDER_OPTION = [
-  { label: 'Men', value: 'Men' },
-  { label: 'Women', value: 'Women' },
-  { label: 'Kids', value: 'Kids' },
-];
-
-const CATEGORY_OPTION = [
-  { group: 'Clothing', classify: ['Shirts', 'T-shirts', 'Jeans', 'Leather'] },
-  { group: 'Tailored', classify: ['Suits', 'Blazers', 'Trousers', 'Waistcoats'] },
-  { group: 'Accessories', classify: ['Shoes', 'Backpacks and bags', 'Bracelets', 'Face masks'] },
-];
-
-const SUBJECT = [
-  {
-    id: 1,
-    name: 'Khoa',
-  },
-  {
-    id: 2,
-    name: 'Thao',
-  },
-];
-
-const TAGS_OPTION = [
-  'Toy Story 3',
-  'Logan',
-  'Full Metal Jacket',
-  'Dangal',
-  'The Sting',
-  '2001: A Space Odyssey',
-  "Singin' in the Rain",
-  'Toy Story',
-  'Bicycle Thieves',
-  'The Kid',
-  'Inglourious Basterds',
-  'Snatch',
-  '3 Idiots',
-];
-
-const CardTitle = styled(Typography)({
-  display: 'inline-block',
-  textAlign: 'left',
-  marginBottom: '0px',
-  fontSize: '24px',
-});
-
-const MIN_QUANTITY = [1, 2, 3, 4, 5];
-const MAX_QUANTITY = [1, 2, 3, 4, 5];
-
 const LabelStyle = styled(Typography)(({ theme }) => ({
   ...theme.typography.subtitle2,
   color: theme.palette.text.secondary,
@@ -141,9 +92,13 @@ function CourseNewEditForm({ isEdit }: Props) {
     // price: yup.number().moreThan(0, 'Price should not be $0.00'),
   });
 
-  const { data: course } = useQuery(['course', id], () => courseApi.getCourseById(Number(id)), {
-    select: (res) => res.data,
-  });
+  const { data: course, isLoading } = useQuery(
+    ['course', id],
+    () => courseApi.getCourseById(Number(id)),
+    {
+      select: (res) => res.data,
+    }
+  );
 
   const methods = useForm<TCourse>({
     resolver: yupResolver(schema),

@@ -80,6 +80,11 @@ export const PATH_DASHBOARD = {
     editById: (id: string) => path(ROOTS_DASHBOARD, `/majors/${id}`),
     new: path(ROOTS_DASHBOARD, '/majors/new'),
   },
+  orders: {
+    root: path(ROOTS_DASHBOARD, '/orders'),
+    list: path(ROOTS_DASHBOARD, '/orders'),
+    editById: (id: string) => path(ROOTS_DASHBOARD, `/orders/${id}`),
+  },
   user: {
     root: path(ROOTS_DASHBOARD, '/user'),
     new: path(ROOTS_DASHBOARD, '/user/new'),

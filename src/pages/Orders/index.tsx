@@ -32,9 +32,9 @@ import { useSnackbar } from 'notistack';
 import { useEffect, useRef, useState } from 'react';
 // components
 import { useNavigate } from 'react-router-dom';
-import courseApi from 'apis/course';
+import orderApi from 'apis/order';
 import { PATH_DASHBOARD } from 'routes/paths';
-import { TCourse } from 'types/course';
+import { TOrder } from 'types/order';
 import { FormProvider, useForm, UseFormReturn } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -45,8 +45,7 @@ import { useParams } from 'react-router';
 import LoadingAsyncButton from 'components/LoadingAsyncButton';
 import { TabContext, TabList } from '@mui/lab';
 import { type } from 'os';
-import axios from 'axios';
-import { axiosInstance } from 'utils/axios';
+import request from 'utils/axios';
 
 const STATUS_OPTIONS = ['Tất cả', 'Đã duyệt', 'Chờ duyệt', 'Đã huỷ'];
 
@@ -73,31 +72,29 @@ function groupBy(list: any, keyGetter: any) {
   return map;
 }
 
-const CourseListPage = () => {
+const OrderListPage = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('1');
   const { translate } = useLocales();
   const { enqueueSnackbar } = useSnackbar();
-  const [currentItem, setCurrentItem] = useState<TCourse | null>(null);
+  const [currentItem, setCurrentItem] = useState<TOrder | null>(null);
   const ref = useRef<{ reload: Function; formControl: UseFormReturn<any> }>();
 
-  const { data: allData } = useQuery('courses', () => axiosInstance.get('/courses'), {
+  const { data: allData } = useQuery('courses', () => request.get('/courses'), {
     select: (res) => res.data.data,
   });
+  console.log(allData);
   const result = groupBy(allData, (data: any) => data.status);
+  console.log(result.get(5)?.length);
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     ref.current?.formControl.setValue(
       'status',
       newValue === '2'
-        ? STATUS.Pending
-        : newValue === '3'
-        ? STATUS.Waiting
-        : newValue === '4'
         ? STATUS.Start
-        : newValue === '5'
-        ? STATUS.End
-        : newValue === '6'
+        : newValue === '3'
+        ? STATUS.Pending
+        : newValue === '4'
         ? STATUS.CancelNotEnough
         : ''
     );
@@ -107,55 +104,15 @@ const CourseListPage = () => {
 
   const [isUpdate, setIsUpdate] = useState(false);
   const { id } = useParams();
-
-  const { data, isLoading } = useQuery(
-    ['course', currentItem],
-    () => courseApi.getCourseById(Number(currentItem)),
-    {
-      select: (res) => res.data,
-    }
-  );
-
-  const schema = yup.object().shape({
-    name: yup.string().required('Vui lòng nhập tên khoá học'),
-  });
-  const courseForm = useForm<TCourse>({
-    resolver: yupResolver(schema),
-    shouldUnregister: true,
-    defaultValues: { ...data },
-  });
-
-  const { handleSubmit, control, reset } = courseForm;
-
-  useEffect(() => {
-    if (data) {
-      reset(data);
-    }
-  }, [data, reset]);
+  console.log(id);
 
   const deleteSubjectHandler = () =>
-    courseApi
+    orderApi
       .delete(currentItem?.id!)
       .then(() => setCurrentItem(null))
       .then(() => ref.current?.reload)
       .then(() =>
         enqueueSnackbar(`Xóa thành công`, {
-          variant: 'success',
-        })
-      )
-      .catch((err: any) => {
-        const errMsg = get(err.response, ['data', 'message'], `Có lỗi xảy ra. Vui lòng thử lại`);
-        enqueueSnackbar(errMsg, {
-          variant: 'error',
-        });
-      });
-
-  const updateCourseHandler = (course: TCourse) =>
-    courseApi
-      .update(course!)
-      .then(() => ref.current?.reload)
-      .then(() =>
-        enqueueSnackbar(`Cập nhât thành công`, {
           variant: 'success',
         })
       )
@@ -173,96 +130,18 @@ const CourseListPage = () => {
       hideInSearch: true,
     },
     {
-      title: 'Tên khoá học',
-      dataIndex: 'name',
+      title: 'Mã đơn hàng',
+      dataIndex: 'orderCode',
     },
     {
-      title: translate('common.table.isAvailable'),
-      dataIndex: 'status',
-      render: (status: any) => (
-        <Label
-          color={
-            status === 2
-              ? 'warning'
-              : status === 3
-              ? 'info'
-              : status === 5
-              ? 'secondary'
-              : status === 6
-              ? 'success'
-              : 'default'
-          }
-        >
-          {status === 2
-            ? 'Chờ duyệt'
-            : status === 5
-            ? translate('common.available')
-            : status === 3
-            ? 'Chờ đủ mentee'
-            : status === 6
-            ? 'Đã hoàn thành'
-            : 'Đã huỷ'}
-        </Label>
-      ),
-      hideInSearch: true,
-    },
-    // {
-    //   title: 'Xác thực',
-    //   dataIndex: 'isVerified',
-    //   hideInSearch: true,
-    //   render: (isVeri: any) => (
-    //     <Iconify
-    //       icon={isVeri ? 'eva:checkmark-circle-fill' : 'eva:clock-outline'}
-    //       sx={{
-    //         width: 20,
-    //         height: 20,
-    //         color: 'success.main',
-    //         ...(!isVeri && { color: 'warning.main' }),
-    //       }}
-    //     />
-    //   ),
-    // },
-    // {
-    //   title: 'Ngày',
-    //   dataIndex: 'createdAt',
-    //   valueType: 'date',
-    //   hideInTable: true,
-    // },
-    // {
-    //   title: 'Giờ',
-    //   dataIndex: 'createdAt',
-    //   valueType: 'time',
-    //   hideInTable: true,
-    // },
-    {
-      title: 'Ngày bắt đầu',
-      dataIndex: 'startDate',
-      valueType: 'datetime',
-      hideInSearch: true,
-    },
-    {
-      title: 'Ngày kết thúc',
-      dataIndex: 'finishDate',
-      valueType: 'datetime',
-      hideInSearch: true,
-    },
-    // {
-    //   title: 'Ngày cập nhật',
-    //   dataIndex: 'updateDate',
-    //   valueType: 'datetime',
-    //   hideInSearch: true,
-    // },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'createDate',
-      valueType: 'datetime',
-      hideInSearch: true,
+      title: 'Tổng tiền',
+      dataIndex: 'totalAmount',
     },
   ];
 
   return (
     <Page
-      title={`Khoá học`}
+      title={`Order`}
       isTable
       content={
         <HeaderBreadcrumbs
@@ -270,7 +149,7 @@ const CourseListPage = () => {
           links={[
             { name: `${translate('dashboard')}`, href: PATH_DASHBOARD.root },
             {
-              name: `Khoá học`,
+              name: `Order`,
               href: PATH_DASHBOARD.courses.root,
             },
             { name: `${translate('list')}` },
@@ -295,7 +174,7 @@ const CourseListPage = () => {
           onDelete={deleteSubjectHandler}
           title={
             <>
-              {translate('common.confirmDeleteTitle')} <strong>{currentItem?.name}</strong>
+              {translate('common.confirmDeleteTitle')} <strong>{currentItem?.orderCode}</strong>
             </>
           }
         />,
@@ -308,7 +187,6 @@ const CourseListPage = () => {
               onChange={handleChange}
               aria-label="lab API tabs example"
               sx={{ px: 2, bgcolor: 'background.neutral' }}
-              variant="scrollable"
             >
               <Tab
                 disableRipple
@@ -318,36 +196,27 @@ const CourseListPage = () => {
                 sx={{ px: 2 }}
               />
               <Tab
-                label={'Chờ duyệt'}
-                icon={<Label color={'warning'}> {result.get(2)?.length} </Label>}
+                disableRipple
+                label={'Đã duyệt'}
+                icon={
+                  <Label color={'success'}>
+                    {' '}
+                    {result.get(5)?.length + result.get(6)?.length + result.get(3)?.length}{' '}
+                  </Label>
+                }
                 value="2"
                 sx={{ px: 2 }}
               />
               <Tab
-                disableRipple
-                label={'Chờ đủ mentor'}
-                icon={<Label color={'info'}> {result.get(3)?.length} </Label>}
+                label={'Chờ duyệt'}
+                icon={<Label color={'warning'}> {result.get(2)?.length} </Label>}
                 value="3"
                 sx={{ px: 2 }}
               />
               <Tab
-                disableRipple
-                label={'Đang diễn ra'}
-                icon={<Label color={'secondary'}> {result.get(5)?.length} </Label>}
-                value="4"
-                sx={{ px: 2 }}
-              />
-              <Tab
-                disableRipple
-                label={'Kết thúc'}
-                icon={<Label color={'success'}> {result.get(6)?.length} </Label>}
-                value="5"
-                sx={{ px: 2 }}
-              />
-              <Tab
                 label={'Đã huỷ'}
-                icon={<Label color={'default'}> {result.get(4)?.length} </Label>}
-                value="6"
+                icon={<Label color={'error'}> {result.get(4)?.length} </Label>}
+                value="4"
                 sx={{ px: 2 }}
               />
             </TabList>
@@ -361,7 +230,7 @@ const CourseListPage = () => {
                 setIsUpdate(true);
               }}
               onView={(course: any) => navigate(`${PATH_DASHBOARD.courses.root}/${course.id}/view`)}
-              getData={courseApi.getCourses}
+              getData={orderApi.getOrders}
               onDelete={setCurrentItem}
               columns={columns}
             />
@@ -372,4 +241,4 @@ const CourseListPage = () => {
   );
 };
 
-export default CourseListPage;
+export default OrderListPage;
