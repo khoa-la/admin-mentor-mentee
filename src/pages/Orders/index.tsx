@@ -134,8 +134,30 @@ const OrderListPage = () => {
       dataIndex: 'orderCode',
     },
     {
+      title: 'Khoá học',
+      dataIndex: 'courseId',
+    },
+    {
+      title: 'Học viên',
+      dataIndex: 'mentee.fullName',
+    },
+    {
+      title: 'Giảm giá',
+      dataIndex: 'discount',
+    },
+    {
       title: 'Tổng tiền',
       dataIndex: 'totalAmount',
+    },
+    {
+      title: 'Thanh toán',
+      dataIndex: 'finalAmount',
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'createDate',
+      valueType: 'datetime',
+      hideInSearch: true,
     },
   ];
 
@@ -180,63 +202,20 @@ const OrderListPage = () => {
         />,
       ]}
     >
-      <Card>
-        <TabContext value={activeTab}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <TabList
-              onChange={handleChange}
-              aria-label="lab API tabs example"
-              sx={{ px: 2, bgcolor: 'background.neutral' }}
-            >
-              <Tab
-                disableRipple
-                label={'Tất cả'}
-                icon={<Label color={'success'}>{allData?.length}</Label>}
-                value="1"
-                sx={{ px: 2 }}
-              />
-              <Tab
-                disableRipple
-                label={'Đã duyệt'}
-                icon={
-                  <Label color={'success'}>
-                    {' '}
-                    {result.get(5)?.length + result.get(6)?.length + result.get(3)?.length}{' '}
-                  </Label>
-                }
-                value="2"
-                sx={{ px: 2 }}
-              />
-              <Tab
-                label={'Chờ duyệt'}
-                icon={<Label color={'warning'}> {result.get(2)?.length} </Label>}
-                value="3"
-                sx={{ px: 2 }}
-              />
-              <Tab
-                label={'Đã huỷ'}
-                icon={<Label color={'error'}> {result.get(4)?.length} </Label>}
-                value="4"
-                sx={{ px: 2 }}
-              />
-            </TabList>
-          </Box>
-          <Stack spacing={2}>
-            <ResoTable
-              rowKey="id"
-              ref={ref}
-              onEdit={(course: any) => {
-                navigate(`${PATH_DASHBOARD.courses.root}/${course.id}`);
-                setIsUpdate(true);
-              }}
-              onView={(course: any) => navigate(`${PATH_DASHBOARD.courses.root}/${course.id}/view`)}
-              getData={orderApi.getOrders}
-              onDelete={setCurrentItem}
-              columns={columns}
-            />
-          </Stack>
-        </TabContext>
-      </Card>
+      <Stack spacing={2}>
+        <ResoTable
+          rowKey="id"
+          ref={ref}
+          onEdit={(course: any) => {
+            navigate(`${PATH_DASHBOARD.courses.root}/${course.id}`);
+            setIsUpdate(true);
+          }}
+          onView={(course: any) => navigate(`${PATH_DASHBOARD.courses.root}/${course.id}/view`)}
+          getData={orderApi.getOrders}
+          onDelete={setCurrentItem}
+          columns={columns}
+        />
+      </Stack>
     </Page>
   );
 };

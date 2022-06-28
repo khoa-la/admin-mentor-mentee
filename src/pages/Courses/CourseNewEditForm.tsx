@@ -530,7 +530,14 @@ function CourseNewEditForm({ isEdit }: Props) {
                     Lưu thay đổi
                   </LoadingButton>
                 ) : (
-                  ''
+                  <LoadingButton
+                    type="submit"
+                    variant="contained"
+                    size="large"
+                    loading={isSubmitting}
+                  >
+                    Duyệt
+                  </LoadingButton>
                 )}
               </Stack>
             </Grid>

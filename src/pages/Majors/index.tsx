@@ -41,7 +41,7 @@ const MajorListPage = () => {
 
   const deleteSubjectHandler = async () => {
     await majorApi
-      .delete(currentItem?.id!)
+      .remove(currentItem?.id!)
       .then(() => setCurrentItem(null))
       .then(() => ref.current?.reload)
       .then(() =>

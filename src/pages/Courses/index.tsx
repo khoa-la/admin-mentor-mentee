@@ -206,6 +206,28 @@ const CourseListPage = () => {
       ),
       hideInSearch: true,
     },
+    {
+      title: 'Môn học',
+      dataIndex: 'subject.name',
+      hideInSearch: true,
+    },
+    {
+      title: 'Giảng viên',
+      dataIndex: 'mentor.fullName',
+      hideInSearch: true,
+    },
+    {
+      title: 'Học viên tối thiểu',
+      dataIndex: 'minQuantity',
+      render: (quantity: any) => <Label color={'default'}>{quantity}</Label>,
+      hideInSearch: true,
+    },
+    {
+      title: 'Học viên tối đa',
+      dataIndex: 'maxQuantity',
+      render: (quantity: any) => <Label color={'default'}>{quantity}</Label>,
+      hideInSearch: true,
+    },
     // {
     //   title: 'Xác thực',
     //   dataIndex: 'isVerified',
@@ -252,12 +274,12 @@ const CourseListPage = () => {
     //   valueType: 'datetime',
     //   hideInSearch: true,
     // },
-    {
-      title: 'Ngày tạo',
-      dataIndex: 'createDate',
-      valueType: 'datetime',
-      hideInSearch: true,
-    },
+    // {
+    //   title: 'Ngày tạo',
+    //   dataIndex: 'createDate',
+    //   valueType: 'datetime',
+    //   hideInSearch: true,
+    // },
   ];
 
   return (

@@ -103,7 +103,7 @@ function CreateMajor() {
   const onSubmit = async (major: any) => {
     try {
       await majorApi
-        .create(major!)
+        .add(major!)
         .then(() =>
           enqueueSnackbar(`Thêm thành công`, {
             variant: 'success',
