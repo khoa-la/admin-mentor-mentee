@@ -24,7 +24,7 @@ const handleTokenExpired = (exp: number) => {
 
   // Test token expires after 10s
   // const timeLeft = currentTime + 10000 - currentTime; // ~10s
-  const timeLeft = exp * 1000 - currentTime;
+  const timeLeft = exp * 100 - currentTime;
 
   clearTimeout(expiredTimer);
 
@@ -44,7 +44,7 @@ const setSession = (accessToken: string | null) => {
 
     // This function below will handle when token is expired
     const { exp } = jwtDecode<{ exp: number }>(accessToken); // ~5 days by minimals server
-    handleTokenExpired(exp);
+    // handleTokenExpired(exp);
   } else {
     localStorage.removeItem('accessToken');
     delete axios.defaults.headers.common.Authorization;
