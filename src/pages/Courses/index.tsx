@@ -152,7 +152,7 @@ const CourseListPage = () => {
 
   const updateCourseHandler = (course: TCourse) =>
     courseApi
-      .update(course!)
+      .update(course.id, course!)
       .then(() => ref.current?.reload)
       .then(() =>
         enqueueSnackbar(`Cập nhât thành công`, {
@@ -300,16 +300,16 @@ const CourseListPage = () => {
         />
       }
       actions={() => [
-        <Button
-          key="create-subject"
-          onClick={() => {
-            navigate(PATH_DASHBOARD.courses.new);
-          }}
-          variant="contained"
-          startIcon={<Icon icon={plusFill} />}
-        >
-          {translate('pages.subjects.addBtn')}
-        </Button>,
+        // <Button
+        //   key="create-subject"
+        //   onClick={() => {
+        //     navigate(PATH_DASHBOARD.courses.new);
+        //   }}
+        //   variant="contained"
+        //   startIcon={<Icon icon={plusFill} />}
+        // >
+        //   {translate('pages.subjects.addBtn')}
+        // </Button>,
         <DeleteConfirmDialog
           key={''}
           open={Boolean(currentItem)}

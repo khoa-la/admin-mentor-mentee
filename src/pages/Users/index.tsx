@@ -52,8 +52,8 @@ import request from 'utils/axios';
 const STATUS_OPTIONS = ['Tất cả', 'Đã duyệt', 'Chờ duyệt', 'Đã huỷ'];
 
 enum ROLE {
-  Mentor = 1,
-  Mentee = 2,
+  Mentee = 1,
+  Mentor = 2,
   Admin = 3,
 }
 
@@ -88,15 +88,18 @@ const UserListPage = () => {
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     ref.current?.formControl.setValue(
-      'status',
+      'role-id',
       newValue === '2'
-        ? ROLE.Mentor
+        ? ROLE.Mentee
         : newValue === '3'
         ? ROLE.Mentee
         : newValue === '4'
+        ? ROLE.Mentor
+        : newValue === '5'
         ? ROLE.Admin
         : ''
     );
+    ref.current?.formControl.setValue('is-pending', newValue === '2' ? 'true' : '');
     setActiveTab(newValue);
     ref.current?.formControl.setValue('tabindex', newValue);
   };
@@ -190,7 +193,7 @@ const UserListPage = () => {
       dataIndex: 'roleId',
       render: (role: any) => (
         <Label color={role === 1 ? 'info' : role === 2 ? 'primary' : 'default'}>
-          {role === 1 ? 'Giảng viên' : role === 2 ? 'Học viên' : 'Admin'}
+          {role === 1 ? 'Học viên' : role === 2 ? 'Giảng viên' : 'Admin'}
         </Label>
       ),
       renderFormItem: () => (
@@ -362,6 +365,7 @@ const UserListPage = () => {
               onChange={handleChange}
               aria-label="lab API tabs example"
               sx={{ px: 2, bgcolor: 'background.neutral' }}
+              variant="scrollable"
             >
               <Tab
                 disableRipple
@@ -378,9 +382,30 @@ const UserListPage = () => {
                 sx={{ px: 2 }}
               />
               <Tab
+                disableRipple
+                label={'Học viên'}
+                icon={<Label color={'success'}> {roleID.get(2)?.length} </Label>}
+                value="3"
+                sx={{ px: 2 }}
+              />
+              <Tab
+                disableRipple
+                label={'Giảng viên'}
+                icon={<Label color={'success'}> {roleID.get(2)?.length} </Label>}
+                value="4"
+                sx={{ px: 2 }}
+              />
+              <Tab
+                disableRipple
+                label={'Admin'}
+                icon={<Label color={'success'}> {roleID.get(2)?.length} </Label>}
+                value="5"
+                sx={{ px: 2 }}
+              />
+              <Tab
                 label={'Đã vô hiệu hoá'}
                 icon={<Label color={'error'}> {status.get(2)?.length} </Label>}
-                value="3"
+                value="6"
                 sx={{ px: 2 }}
               />
             </TabList>

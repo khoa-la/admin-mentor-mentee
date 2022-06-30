@@ -1,5 +1,5 @@
 import { useSnackbar } from 'notistack';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import * as yup from 'yup';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { TCourse } from 'types/course';
@@ -42,6 +42,24 @@ import Page from 'components/Page';
 import HeaderBreadcrumbs from 'components/HeaderBreadcrumbs';
 import courseApi from 'apis/course';
 import { get } from 'lodash';
+import { CalendarStyle, CalendarToolbar } from 'sections/@dashboard/calendar';
+import FullCalendar, { DateSelectArg, EventClickArg, EventDropArg } from '@fullcalendar/react';
+import useResponsive from 'hooks/useResponsive';
+// import { CalendarView } from '@types/calendar';
+import {
+  closeModal,
+  openModal,
+  selectEvent,
+  selectRange,
+  updateEvent,
+} from 'redux/slices/calendar';
+import { useDispatch, useSelector } from 'redux/store';
+import interactionPlugin, { EventResizeDoneArg } from '@fullcalendar/interaction';
+import listPlugin from '@fullcalendar/list';
+import dayGridPlugin from '@fullcalendar/daygrid';
+import timeGridPlugin from '@fullcalendar/timegrid';
+import timelinePlugin from '@fullcalendar/timeline';
+// import { CalendarView } from '@types/calendar';
 
 // ----------------------------------------------------------------------
 
@@ -66,15 +84,106 @@ function CourseNewEditForm({ isEdit }: Props) {
 
   const { id } = useParams();
   const { pathname } = useLocation();
-  const view = pathname.includes('view');
+  const viewCourse = pathname.includes('view');
+  const isDesktop = useResponsive('up', 'sm');
+  const [date, setDate] = useState(new Date());
+  const calendarRef = useRef<FullCalendar>(null);
+  const [view, setView] = useState(isDesktop ? 'dayGridMonth' : 'listWeek');
+  const dispatch = useDispatch();
+  const { events, isOpenModal, selectedRange } = useSelector((state) => state.calendar);
+
+  const handleClickToday = () => {
+    const calendarEl = calendarRef.current;
+    if (calendarEl) {
+      const calendarApi = calendarEl.getApi();
+      calendarApi.today();
+      setDate(calendarApi.getDate());
+    }
+  };
+
+  // const handleChangeView = (newView: CalendarView) => {
+  //   const calendarEl = calendarRef.current;
+  //   if (calendarEl) {
+  //     const calendarApi = calendarEl.getApi();
+  //     calendarApi.changeView(newView);
+  //     setView(newView);
+  //   }
+  // };
+
+  const handleClickDatePrev = () => {
+    const calendarEl = calendarRef.current;
+    if (calendarEl) {
+      const calendarApi = calendarEl.getApi();
+      calendarApi.prev();
+      setDate(calendarApi.getDate());
+    }
+  };
+
+  const handleClickDateNext = () => {
+    const calendarEl = calendarRef.current;
+    if (calendarEl) {
+      const calendarApi = calendarEl.getApi();
+      calendarApi.next();
+      setDate(calendarApi.getDate());
+    }
+  };
+
+  const handleSelectRange = (arg: DateSelectArg) => {
+    const calendarEl = calendarRef.current;
+    if (calendarEl) {
+      const calendarApi = calendarEl.getApi();
+      calendarApi.unselect();
+    }
+    dispatch(selectRange(arg.start, arg.end));
+  };
+
+  const handleSelectEvent = (arg: EventClickArg) => {
+    dispatch(selectEvent(arg.event.id));
+  };
+
+  const handleResizeEvent = async ({ event }: EventResizeDoneArg) => {
+    try {
+      dispatch(
+        updateEvent(event.id, {
+          allDay: event.allDay,
+          start: event.start,
+          end: event.end,
+        })
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleDropEvent = async ({ event }: EventDropArg) => {
+    try {
+      dispatch(
+        updateEvent(event.id, {
+          allDay: event.allDay,
+          start: event.start,
+          end: event.end,
+        })
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleAddEvent = () => {
+    dispatch(openModal());
+  };
+
+  const handleCloseModal = () => {
+    dispatch(closeModal());
+  };
 
   useEffect(() => {
-    if (view) {
+    if (viewCourse) {
       setIsView(true);
     } else {
       setIsView(false);
     }
-  }, [view, setIsView]);
+  }, [viewCourse, setIsView]);
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required'),
@@ -171,7 +280,7 @@ function CourseNewEditForm({ isEdit }: Props) {
   const onSubmit = async (course: TCourse) => {
     try {
       await courseApi
-        .update(course!)
+        .update(course.id, course!)
         .then(() =>
           enqueueSnackbar(`Cập nhât thành công`, {
             variant: 'success',
@@ -520,7 +629,7 @@ function CourseNewEditForm({ isEdit }: Props) {
               <RHFSwitch name="taxes" label="Price includes taxes" />
             </Card> */}
 
-                {!isView ? (
+                {values.status !== 2 ? (
                   <LoadingButton
                     type="submit"
                     variant="contained"
@@ -530,18 +639,73 @@ function CourseNewEditForm({ isEdit }: Props) {
                     Lưu thay đổi
                   </LoadingButton>
                 ) : (
-                  <LoadingButton
-                    type="submit"
-                    variant="contained"
-                    size="large"
-                    loading={isSubmitting}
-                  >
-                    Duyệt
-                  </LoadingButton>
+                  <Grid item xs={12} display={'flex'} justifyContent={'center'}>
+                    <LoadingButton
+                      type="submit"
+                      variant="outlined"
+                      size="large"
+                      loading={isSubmitting}
+                      onClick={() => setValue('status', 4)}
+                    >
+                      Từ chối
+                    </LoadingButton>
+                    <Divider variant="middle" />
+                    <LoadingButton
+                      type="submit"
+                      variant="contained"
+                      size="large"
+                      loading={isSubmitting}
+                      onClick={() => setValue('status', 3)}
+                    >
+                      Duyệt
+                    </LoadingButton>
+                  </Grid>
                 )}
               </Stack>
             </Grid>
           </Grid>
+
+          <Card>
+            <CalendarStyle>
+              <CalendarToolbar
+                date={date}
+                // view={view}
+                onNextDate={handleClickDateNext}
+                onPrevDate={handleClickDatePrev}
+                onToday={handleClickToday}
+                onChangeView={() => console.log('')}
+                view={'dayGridMonth'}
+              />
+              <FullCalendar
+                weekends
+                editable
+                droppable
+                selectable
+                events={events}
+                ref={calendarRef}
+                rerenderDelay={10}
+                initialDate={date}
+                initialView={view}
+                dayMaxEventRows={3}
+                eventDisplay="block"
+                headerToolbar={false}
+                allDayMaintainDuration
+                eventResizableFromStart
+                select={handleSelectRange}
+                eventDrop={handleDropEvent}
+                eventClick={handleSelectEvent}
+                eventResize={handleResizeEvent}
+                height={isDesktop ? 720 : 'auto'}
+                plugins={[
+                  listPlugin,
+                  dayGridPlugin,
+                  timelinePlugin,
+                  timeGridPlugin,
+                  interactionPlugin,
+                ]}
+              />
+            </CalendarStyle>
+          </Card>
         </Page>
       </FormProvider>
     </>

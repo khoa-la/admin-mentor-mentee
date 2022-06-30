@@ -72,14 +72,14 @@ export default function Login() {
       <RootStyle>
         <HeaderStyle>
           <Logo />
-          {smUp && (
+          {/* {smUp && (
             <Typography variant="body2" sx={{ mt: { md: -2 } }}>
               Don’t have an account? {''}
               <Link variant="subtitle2" component={RouterLink} to={PATH_AUTH.register}>
                 Get started
               </Link>
             </Typography>
-          )}
+          )} */}
         </HeaderStyle>
 
         {mdUp && (
@@ -103,7 +103,7 @@ export default function Login() {
                 <Typography variant="h4" gutterBottom>
                   Sign in to Mentor Mentee
                 </Typography>
-                <Typography sx={{ color: 'text.secondary' }}>Enter your details below.</Typography>
+                {/* <Typography sx={{ color: 'text.secondary' }}>Enter your details below.</Typography> */}
               </Box>
 
               <Tooltip title={capitalCase(method)} placement="right">
@@ -117,20 +117,20 @@ export default function Login() {
               </Tooltip>
             </Stack>
 
-            <Alert severity="info" sx={{ mb: 3 }}>
+            {/* <Alert severity="info" sx={{ mb: 3 }}>
               Use email : <strong>demo@minimals.cc</strong> / password :<strong> demo1234</strong>
-            </Alert>
+            </Alert> */}
 
             <LoginForm />
 
-            {!smUp && (
+            {/* {!smUp && (
               <Typography variant="body2" align="center" sx={{ mt: 3 }}>
                 Don’t have an account?{' '}
                 <Link variant="subtitle2" component={RouterLink} to={PATH_AUTH.register}>
                   Get started
                 </Link>
               </Typography>
-            )}
+            )} */}
           </ContentStyle>
         </Container>
       </RootStyle>

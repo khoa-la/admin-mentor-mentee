@@ -134,24 +134,27 @@ const OrderListPage = () => {
       dataIndex: 'orderCode',
     },
     {
-      title: 'Khoá học',
-      dataIndex: 'courseId',
-    },
-    {
       title: 'Học viên',
       dataIndex: 'mentee.fullName',
     },
     {
+      title: 'Khoá học',
+      dataIndex: 'courseId',
+    },
+    {
       title: 'Giảm giá',
       dataIndex: 'discount',
+      hideInSearch: true,
     },
     {
       title: 'Tổng tiền',
       dataIndex: 'totalAmount',
+      hideInSearch: true,
     },
     {
       title: 'Thanh toán',
       dataIndex: 'finalAmount',
+      hideInSearch: true,
     },
     {
       title: 'Ngày tạo',
@@ -179,16 +182,6 @@ const OrderListPage = () => {
         />
       }
       actions={() => [
-        <Button
-          key="create-subject"
-          onClick={() => {
-            navigate(PATH_DASHBOARD.courses.new);
-          }}
-          variant="contained"
-          startIcon={<Icon icon={plusFill} />}
-        >
-          {translate('pages.subjects.addBtn')}
-        </Button>,
         <DeleteConfirmDialog
           key={''}
           open={Boolean(currentItem)}
@@ -206,13 +199,13 @@ const OrderListPage = () => {
         <ResoTable
           rowKey="id"
           ref={ref}
-          onEdit={(course: any) => {
-            navigate(`${PATH_DASHBOARD.courses.root}/${course.id}`);
-            setIsUpdate(true);
-          }}
-          onView={(course: any) => navigate(`${PATH_DASHBOARD.courses.root}/${course.id}/view`)}
+          // onEdit={(course: any) => {
+          //   navigate(`${PATH_DASHBOARD.courses.root}/${course.id}`);
+          //   setIsUpdate(true);
+          // }}
+          // onView={(course: any) => navigate(`${PATH_DASHBOARD.courses.root}/${course.id}/view`)}
           getData={orderApi.getOrders}
-          onDelete={setCurrentItem}
+          // onDelete={setCurrentItem}
           columns={columns}
         />
       </Stack>
