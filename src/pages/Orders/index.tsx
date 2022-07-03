@@ -139,7 +139,7 @@ const OrderListPage = () => {
     },
     {
       title: 'Khoá học',
-      dataIndex: 'course.courseName',
+      dataIndex: 'course.name',
     },
     {
       title: 'Tổng tiền',
