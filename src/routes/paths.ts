@@ -74,6 +74,18 @@ export const PATH_DASHBOARD = {
     editById: (id: string) => path(ROOTS_DASHBOARD, `/users/${id}`),
     new: path(ROOTS_DASHBOARD, '/users/new'),
   },
+  mentors: {
+    root: path(ROOTS_DASHBOARD, '/mentors'),
+    list: path(ROOTS_DASHBOARD, '/mentors'),
+    editById: (id: string) => path(ROOTS_DASHBOARD, `/mentors/${id}`),
+    new: path(ROOTS_DASHBOARD, '/mentors/new'),
+  },
+  admins: {
+    root: path(ROOTS_DASHBOARD, '/admins'),
+    list: path(ROOTS_DASHBOARD, '/admins'),
+    editById: (id: string) => path(ROOTS_DASHBOARD, `/admins/${id}`),
+    new: path(ROOTS_DASHBOARD, '/admins/new'),
+  },
   majors: {
     root: path(ROOTS_DASHBOARD, '/majors'),
     list: path(ROOTS_DASHBOARD, '/majors'),

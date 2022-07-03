@@ -78,6 +78,18 @@ const navConfig = [
         path: PATH_DASHBOARD.users.list,
         icon: ICONS.user,
       },
+      // MENTOR
+      {
+        title: 'mentor',
+        path: PATH_DASHBOARD.mentors.list,
+        icon: ICONS.user,
+      },
+      // ADMIN
+      {
+        title: 'admin',
+        path: PATH_DASHBOARD.admins.list,
+        icon: ICONS.user,
+      },
     ],
   },
 

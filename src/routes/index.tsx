@@ -126,6 +126,28 @@ export default function Router() {
           ],
         },
         {
+          path: 'mentors',
+          children: [
+            { path: '', element: <MentorListPage /> },
+            {
+              path: 'new',
+              element: <MentorEditForm />,
+            },
+            { path: ':id', element: <MentorEditForm /> },
+          ],
+        },
+        {
+          path: 'admins',
+          children: [
+            { path: '', element: <AdminListPage /> },
+            {
+              path: 'new',
+              element: <AdminEditForm />,
+            },
+            { path: ':id', element: <AdminEditForm /> },
+          ],
+        },
+        {
           path: 'majors',
           children: [
             { path: '', element: <MajorListPage /> },
@@ -305,6 +327,14 @@ const CourseNewEditForm = Loadable(lazy(() => import('../pages/Courses/CourseNew
 // USER
 const UserListPage = Loadable(lazy(() => import('../pages/Users')));
 const UserEditForm = Loadable(lazy(() => import('../pages/Users/UserEditForm')));
+
+// MENTOR
+const MentorListPage = Loadable(lazy(() => import('../pages/Mentors')));
+const MentorEditForm = Loadable(lazy(() => import('../pages/Mentors/MentorEditForm')));
+
+// ADMIN
+const AdminListPage = Loadable(lazy(() => import('../pages/Admins')));
+const AdminEditForm = Loadable(lazy(() => import('../pages/Admins/AdminEditForm')));
 
 // MAJOR
 const MajorListPage = Loadable(lazy(() => import('../pages/Majors')));

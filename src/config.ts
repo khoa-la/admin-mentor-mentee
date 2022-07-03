@@ -4,6 +4,8 @@ import { enUS, frFR, zhCN, viVN, arSD } from '@mui/material/locale';
 import { SettingsValueProps } from './components/settings/type';
 // routes
 import { PATH_DASHBOARD } from './routes/paths';
+import { getApps, initializeApp } from 'firebase/app';
+import { getStorage } from 'firebase/storage';
 
 // API
 // ----------------------------------------------------------------------
@@ -20,6 +22,14 @@ export const FIREBASE_API = {
   appId: process.env.REACT_APP_FIREBASE_APPID,
   measurementId: process.env.REACT_APP_FIREBASE_MEASUREMENT_ID,
 };
+
+const app = initializeApp(FIREBASE_API);
+
+if (!getApps().length) {
+  initializeApp(FIREBASE_API);
+}
+
+export const storage = getStorage(app);
 
 export const COGNITO_API = {
   userPoolId: process.env.REACT_APP_AWS_COGNITO_USER_POOL_ID,

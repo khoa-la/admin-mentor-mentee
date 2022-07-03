@@ -71,22 +71,34 @@ function groupBy(list: any, keyGetter: any) {
   return map;
 }
 
-const UserListPage = () => {
+const MetorListPage = () => {
   const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState('1');
   const { translate } = useLocales();
   const { enqueueSnackbar } = useSnackbar();
   const [currentItem, setCurrentItem] = useState<TUser | null>(null);
-  const [activeTab, setActiveTab] = useState('1');
   const ref = useRef<{ reload: Function; formControl: UseFormReturn<any> }>();
 
-  const { data: allData } = useQuery('users', () => request.get('/admin/users?role-id=1'), {
+  const { data: allData } = useQuery('users', () => request.get('/admin/users'), {
     select: (res) => res.data.data,
   });
-  const pending = groupBy(allData, (data: any) => data.isPending);
+  const status = groupBy(allData, (data: any) => data.status);
   const roleID = groupBy(allData, (data: any) => data.roleId);
   console.log(roleID);
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
+    ref.current?.formControl.setValue(
+      'role-id',
+      newValue === '2'
+        ? ROLE.Mentee
+        : newValue === '3'
+        ? ROLE.Mentee
+        : newValue === '4'
+        ? ROLE.Mentor
+        : newValue === '5'
+        ? ROLE.Admin
+        : ''
+    );
     ref.current?.formControl.setValue('is-pending', newValue === '2' ? 'true' : '');
     setActiveTab(newValue);
     ref.current?.formControl.setValue('tabindex', newValue);
@@ -94,6 +106,15 @@ const UserListPage = () => {
 
   const [isUpdate, setIsUpdate] = useState(false);
   const { id } = useParams();
+  console.log(id);
+
+  // const { data, isLoading } = useQuery(
+  //   ['user', currentItem],
+  //   () => userApi.getUserById(Number(currentItem)),
+  //   {
+  //     select: (res) => res.data,
+  //   }
+  // );
 
   const schema = yup.object().shape({
     name: yup.string().required('Vui lòng nhập tên khoá học'),
@@ -300,7 +321,7 @@ const UserListPage = () => {
 
   return (
     <Page
-      title={`Người dùng`}
+      title={`Giảng viên`}
       isTable
       content={
         <HeaderBreadcrumbs
@@ -308,7 +329,7 @@ const UserListPage = () => {
           links={[
             { name: `${translate('dashboard')}`, href: PATH_DASHBOARD.root },
             {
-              name: `Người dùng`,
+              name: `Giảng viên`,
               href: PATH_DASHBOARD.courses.root,
             },
             { name: `${translate('list')}` },
@@ -330,50 +351,25 @@ const UserListPage = () => {
       ]}
     >
       <Card>
-        <TabContext value={activeTab}>
-          <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-            <TabList
-              onChange={handleChange}
-              aria-label="lab API tabs example"
-              sx={{ px: 2, bgcolor: 'background.neutral' }}
-              variant="scrollable"
-            >
-              <Tab
-                disableRipple
-                label={'Tất cả'}
-                icon={<Label color={'success'}> {allData?.length} </Label>}
-                value="1"
-                sx={{ px: 2 }}
-              />
-              <Tab
-                disableRipple
-                label={'Đăng ký làm giảng viên'}
-                icon={<Label color={'warning'}> {pending.get('true')?.length || 0} </Label>}
-                value="2"
-                sx={{ px: 2 }}
-              />
-            </TabList>
-          </Box>
-          <Stack spacing={2}>
-            <ResoTable
-              rowKey="id"
-              defaultFilters={{
-                'role-id': 1,
-              }}
-              ref={ref}
-              onEdit={(user: any) => {
-                navigate(`${PATH_DASHBOARD.users.root}/${user.id}`);
-                setIsUpdate(true);
-              }}
-              getData={userApi.getUsers}
-              onDelete={setCurrentItem}
-              columns={columns}
-            />
-          </Stack>
-        </TabContext>
+        <Stack spacing={2}>
+          <ResoTable
+            rowKey="id"
+            defaultFilters={{
+              'role-id': 2,
+            }}
+            ref={ref}
+            onEdit={(user: any) => {
+              navigate(`${PATH_DASHBOARD.mentors.root}/${user.id}`);
+              setIsUpdate(true);
+            }}
+            getData={userApi.getUsers}
+            onDelete={setCurrentItem}
+            columns={columns}
+          />
+        </Stack>
       </Card>
     </Page>
   );
 };
 
-export default UserListPage;
+export default MetorListPage;

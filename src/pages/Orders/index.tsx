@@ -139,21 +139,11 @@ const OrderListPage = () => {
     },
     {
       title: 'Khoá học',
-      dataIndex: 'courseId',
-    },
-    {
-      title: 'Giảm giá',
-      dataIndex: 'discount',
-      hideInSearch: true,
+      dataIndex: 'course.courseName',
     },
     {
       title: 'Tổng tiền',
       dataIndex: 'totalAmount',
-      hideInSearch: true,
-    },
-    {
-      title: 'Thanh toán',
-      dataIndex: 'finalAmount',
       hideInSearch: true,
     },
     {

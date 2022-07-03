@@ -14,7 +14,7 @@ import { useForm } from 'react-hook-form';
 import { useQuery } from 'react-query';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { PATH_DASHBOARD } from 'routes/paths';
-import { TUser } from 'types/user';
+import { TAdmin } from 'types/user';
 import { fData } from 'utils/formatNumber';
 import * as yup from 'yup';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -26,7 +26,7 @@ type Props = {
   isEdit: boolean;
 };
 
-function UserEditForm() {
+function AdminEditForm() {
   const [percent, setPercent] = useState(0);
   const navigate = useNavigate();
 
@@ -56,7 +56,7 @@ function UserEditForm() {
     select: (res) => res.data,
   });
 
-  const methods = useForm<TUser>({
+  const methods = useForm<TAdmin>({
     resolver: yupResolver(schema),
     defaultValues: {
       ...user,
@@ -135,7 +135,7 @@ function UserEditForm() {
     return option;
   };
 
-  const onSubmit = async (user: TUser) => {
+  const onSubmit = async (user: TAdmin) => {
     try {
       await userApi
         .update(user!)
@@ -305,4 +305,4 @@ function UserEditForm() {
   );
 }
 
-export default UserEditForm;
+export default AdminEditForm;

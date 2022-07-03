@@ -335,40 +335,40 @@ const CourseListPage = () => {
               <Tab
                 disableRipple
                 label={'Tất cả'}
-                icon={<Label color={'success'}>{allData?.length}</Label>}
+                icon={<Label color={'success'}>{allData?.length || 0}</Label>}
                 value="1"
                 sx={{ px: 2 }}
               />
               <Tab
                 label={'Chờ duyệt'}
-                icon={<Label color={'warning'}> {result.get(2)?.length} </Label>}
+                icon={<Label color={'warning'}> {result.get(2)?.length || 0} </Label>}
                 value="2"
                 sx={{ px: 2 }}
               />
               <Tab
                 disableRipple
                 label={'Chờ đủ mentor'}
-                icon={<Label color={'info'}> {result.get(3)?.length} </Label>}
+                icon={<Label color={'info'}> {result.get(3)?.length || 0} </Label>}
                 value="3"
                 sx={{ px: 2 }}
               />
               <Tab
                 disableRipple
                 label={'Đang diễn ra'}
-                icon={<Label color={'secondary'}> {result.get(5)?.length} </Label>}
+                icon={<Label color={'secondary'}> {result.get(5)?.length || 0} </Label>}
                 value="4"
                 sx={{ px: 2 }}
               />
               <Tab
                 disableRipple
                 label={'Kết thúc'}
-                icon={<Label color={'success'}> {result.get(6)?.length} </Label>}
+                icon={<Label color={'success'}> {result.get(6)?.length || 0} </Label>}
                 value="5"
                 sx={{ px: 2 }}
               />
               <Tab
                 label={'Đã huỷ'}
-                icon={<Label color={'default'}> {result.get(4)?.length} </Label>}
+                icon={<Label color={'default'}> {result.get(4)?.length || 0} </Label>}
                 value="6"
                 sx={{ px: 2 }}
               />
