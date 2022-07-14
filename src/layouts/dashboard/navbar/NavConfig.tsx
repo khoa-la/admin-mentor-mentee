@@ -60,6 +60,29 @@ const navConfig = [
         path: PATH_DASHBOARD.courses.list,
         icon: ICONS.libraryBook,
       },
+      // MENTOR
+      {
+        title: 'mentor',
+        path: PATH_DASHBOARD.mentors.list,
+        icon: ICONS.user,
+      },
+      // USER
+      {
+        title: 'user',
+        path: PATH_DASHBOARD.users.list,
+        icon: ICONS.user,
+      },
+      // ADMIN
+      {
+        title: 'admin',
+        path: PATH_DASHBOARD.admins.list,
+        icon: ICONS.user,
+      },
+    ],
+  },
+  {
+    subheader: 'cấu hình',
+    items: [
       // MAJOR
       {
         title: 'major',
@@ -71,24 +94,6 @@ const navConfig = [
         title: 'subject',
         path: PATH_DASHBOARD.subjects.list,
         icon: ICONS.menuBook,
-      },
-      // USER
-      {
-        title: 'user',
-        path: PATH_DASHBOARD.users.list,
-        icon: ICONS.user,
-      },
-      // MENTOR
-      {
-        title: 'mentor',
-        path: PATH_DASHBOARD.mentors.list,
-        icon: ICONS.user,
-      },
-      // ADMIN
-      {
-        title: 'admin',
-        path: PATH_DASHBOARD.admins.list,
-        icon: ICONS.user,
       },
     ],
   },

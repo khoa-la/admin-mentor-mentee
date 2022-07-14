@@ -96,11 +96,11 @@ function AdminEditForm() {
   const roles = [
     {
       id: 1,
-      name: 'Giảng viên',
+      name: 'Học viên',
     },
     {
       id: 2,
-      name: 'Học viên',
+      name: 'Giảng viên',
     },
     {
       id: 3,
