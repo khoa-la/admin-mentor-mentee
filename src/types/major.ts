@@ -3,3 +3,8 @@ export type TMajor = {
   name: string;
   imageUrl?: string;
 };
+
+export type TSubjectMajor = {
+  subjectId: number;
+  majorId: number;
+}

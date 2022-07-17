@@ -17,10 +17,11 @@ import EmptyContent from 'components/EmptyContent';
 import { InputField } from 'components/form';
 import { useFieldArray, useFormState } from 'react-hook-form';
 
-const AddProductTable = ({ control }: any) => {
+const AddSubjectTable = ({ control }) => {
   const { errors } = useFormState({ control });
   const { fields: subjects, remove: removeProd } = useFieldArray({ name: 'subjects', control });
-  const buildProductTable = () => (
+  console.log(subjects);
+  const buildSubjectTable = () => (
     <TableContainer>
       <Table aria-label="customized table">
         <TableHead>
@@ -35,8 +36,8 @@ const AddProductTable = ({ control }: any) => {
               <TableCell align="left">
                 <Box display="flex" justifyContent="space-between">
                   <Stack direction="row" spacing={2} alignItems="center">
-                    {/* <Avatar variant="square" src={data.pic_url} /> */}
-                    <Typography noWrap>{data.id}</Typography>
+                    {/* <Avatar variant="square" src={data.imageUrl} /> */}
+                    <Typography noWrap>{data.name}</Typography>
                   </Stack>
                 </Box>
               </TableCell>
@@ -61,7 +62,7 @@ const AddProductTable = ({ control }: any) => {
   return (
     <Stack spacing={2}>
       {subjects.length ? (
-        buildProductTable()
+        buildSubjectTable()
       ) : (
         <EmptyContent title="Chưa có môn học nào được thêm" />
       )}
@@ -69,4 +70,4 @@ const AddProductTable = ({ control }: any) => {
   );
 };
 
-export default AddProductTable;
+export default AddSubjectTable;

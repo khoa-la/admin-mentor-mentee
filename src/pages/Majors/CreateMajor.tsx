@@ -66,14 +66,14 @@ function CreateMajor() {
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required'),
-    subjects: yup
-      .array()
-      .min(1, 'Vui lòng có ít nhất một sản phẩm')
-      .of(
-        yup.object().shape({
-          position: yup.string().required('Vui lòng chọn giá trị'),
-        })
-      ),
+    // subjects: yup
+    //   .array()
+    //   .min(1, 'Vui lòng có ít nhất một sản phẩm')
+    //   .of(
+    //     yup.object().shape({
+    //       position: yup.string().required('Vui lòng chọn giá trị'),
+    //     })
+    //   ),
   });
 
   const methods = useForm<Partial<TMajor & { subjects: any[] }>>({
@@ -122,10 +122,10 @@ function CreateMajor() {
   };
 
   const handleAddProd = (ids: number[], selectedProds: any[]) => {
-    const allSelectedProds = unionBy(subjects, selectedProds, 'subject_id');
+    const allSelectedProds = unionBy(subjects, selectedProds, 'id');
     const updateSelectedProds = allSelectedProds
       .filter(({ id }: { id: number }) => ids.includes(id))
-      .map((p, idx) => ({ ...p, position: idx }));
+      .map((p, idx) => ({ ...p }));
     setSubjects([...updateSelectedProds]);
   };
 

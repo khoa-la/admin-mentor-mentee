@@ -1,4 +1,4 @@
-import { TMajor } from 'types/major';
+import { TMajor, TSubjectMajor } from 'types/major';
 import { generateAPIWithPaging } from './utils';
 import request from 'utils/axios';
 
@@ -12,6 +12,10 @@ const add = (data: TMajor) => request.post('/admin/majors', data);
 
 const update = (data: TMajor) => request.put(`/admin/majors`, data);
 
+const addSubjectMajor = (data: TSubjectMajor) => request.post(`/admin/majors/subject-major`, data);
+const removeSubjectMajor = (data: TSubjectMajor) =>
+  request.delete(`/admin/majors/subject-major`, { data });
+
 const majorApi = {
   ...generateAPIWithPaging<TMajor>('/admin/majors'),
   getMajors,
@@ -19,6 +23,8 @@ const majorApi = {
   remove,
   add,
   update,
+  addSubjectMajor,
+  removeSubjectMajor,
 };
 
 export default majorApi;
