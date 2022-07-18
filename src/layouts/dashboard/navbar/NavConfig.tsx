@@ -68,14 +68,8 @@ const navConfig = [
       },
       // USER
       {
-        title: 'user',
+        title: 'mentee',
         path: PATH_DASHBOARD.users.list,
-        icon: ICONS.user,
-      },
-      // ADMIN
-      {
-        title: 'admin',
-        path: PATH_DASHBOARD.admins.list,
         icon: ICONS.user,
       },
     ],
@@ -94,6 +88,12 @@ const navConfig = [
         title: 'subject',
         path: PATH_DASHBOARD.subjects.list,
         icon: ICONS.menuBook,
+      },
+      // ADMIN
+      {
+        title: 'admin',
+        path: PATH_DASHBOARD.admins.list,
+        icon: ICONS.user,
       },
     ],
   },

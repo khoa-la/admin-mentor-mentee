@@ -16,6 +16,7 @@ import { TSubject } from 'types/subject';
 import { FormProvider, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useLocation } from 'react-router';
 
 interface Props extends Omit<Partial<DialogProps>, 'title'> {
   // title: ReactNode;
@@ -46,6 +47,9 @@ const SubjectForm: React.FC<Props> = ({
 
   const isUpdate = !!subject_id;
 
+  const { pathname } = useLocation();
+  const isNew = pathname.includes('new');
+
   const { data, isLoading } = useQuery(
     ['subject', subject_id],
     () => subjectApi.getSubjectById(subject_id!),
@@ -63,20 +67,25 @@ const SubjectForm: React.FC<Props> = ({
     defaultValues: { ...data },
   });
 
-  const { handleSubmit, reset } = form;
+  const { handleSubmit, reset, setValue } = form;
 
   useEffect(() => {
     if (data) {
       reset(data);
     }
-  }, [data, reset]);
+    if (isNew) {
+      reset({ name: '' });
+    }
+  }, [data, isNew, reset, subject_id]);
 
-  const submitHandler = (values: TSubject) =>
+  const submitHandler = (values: any) => {
+    console.log(values);
     (isUpdate ? onEdit!(values) : onAdd!(values)).finally(() => {
       if (onClose) {
         onClose();
       }
     });
+  };
 
   return (
     <>
@@ -84,7 +93,7 @@ const SubjectForm: React.FC<Props> = ({
         onClick={() => {
           setOpen(true);
         }}
-      >
+      >setValue('id', data?.id!);
         {trigger}
       </span> */}
       <Dialog {...others} fullWidth maxWidth="sm" open={open!} onClose={onClose}>
