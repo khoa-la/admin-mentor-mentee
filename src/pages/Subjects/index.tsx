@@ -86,9 +86,12 @@ const SubjectListPage = () => {
       });
   };
 
-  const updateSubjectHandler = async (subject: TSubject) => {
+  const updateSubjectHandler = async (subject: any) => {
+    const updateSubject = currentUpdateItem;
+    updateSubject!.name = subject.name;
+    console.log('Subject', updateSubject);
     await subjectApi
-      .update(subject!)
+      .update(updateSubject!)
       .then(tableRef.current?.reload)
       .then(() =>
         enqueueSnackbar(`Cập nhật thành công`, {

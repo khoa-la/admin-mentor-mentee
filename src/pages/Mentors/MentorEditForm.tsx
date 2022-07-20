@@ -144,7 +144,7 @@ function MentorEditForm() {
             variant: 'success',
           })
         )
-        .then(() => navigate(PATH_DASHBOARD.users.list))
+        .then(() => navigate(PATH_DASHBOARD.mentors.list))
         .catch((err: any) => {
           const errMsg = get(err.response, ['data', 'message'], `Có lỗi xảy ra. Vui lòng thử lại`);
           enqueueSnackbar(errMsg, {

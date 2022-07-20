@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   CircularProgress,
   Dialog,
@@ -9,7 +10,7 @@ import {
 } from '@mui/material';
 import LoadingAsyncButton from 'components/LoadingAsyncButton';
 import useLocales from 'hooks/useLocales';
-import React, { ReactNode, useEffect, useState } from 'react';
+import React, { useCallback, ReactNode, useEffect, useState } from 'react';
 import subjectApi from 'apis/subject';
 import { useQuery } from 'react-query';
 import { TSubject } from 'types/subject';
@@ -17,6 +18,8 @@ import { FormProvider, useForm } from 'react-hook-form';
 import * as yup from 'yup';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useLocation } from 'react-router';
+import { TMajor } from 'types/major';
+import { RHFTextField, RHFUploadAvatar } from 'components/hook-form';
 
 interface Props extends Omit<Partial<DialogProps>, 'title'> {
   // title: ReactNode;
@@ -24,17 +27,13 @@ interface Props extends Omit<Partial<DialogProps>, 'title'> {
   onCancle?: () => void;
   // onOk: () => Promise<any>;
   children?: ReactNode;
-  subject_id?: number;
   onAdd?: (data: TSubject) => Promise<any>;
-  onEdit?: (data: any) => Promise<any>;
   onClose: () => any;
 }
 
-const SubjectForm: React.FC<Props> = ({
-  subject_id,
+const MajorCreateForm: React.FC<Props> = ({
   open,
   onAdd,
-  onEdit,
   onClose,
   // trigger,
   // onOk: onSubmit,
@@ -45,68 +44,68 @@ const SubjectForm: React.FC<Props> = ({
   // const [open, setOpen] = useState(false);
   const { translate } = useLocales();
 
-  const isUpdate = !!subject_id;
-
   const { pathname } = useLocation();
   const isNew = pathname.includes('new');
 
-  const { data, isLoading } = useQuery(
-    ['subject', subject_id],
-    () => subjectApi.getSubjectById(subject_id!),
-    {
-      select: (res) => res.data,
-    }
-  );
-
   const schema = yup.object().shape({
-    name: yup.string().required('Vui lòng nhập tên môn học'),
+    name: yup.string().required('Vui lòng nhập tên chuyên ngành'),
   });
-  const form = useForm<TSubject>({
+  const form = useForm<TMajor>({
     resolver: yupResolver(schema),
     shouldUnregister: true,
-    defaultValues: { ...data },
+    defaultValues: {
+      name: '',
+      imageUrl: '',
+    },
   });
-
   const { handleSubmit, reset, setValue } = form;
-
-  useEffect(() => {
-    if (data) {
-      reset(data);
-    }
-    if (isNew) {
-      reset({ name: '' });
-    }
-  }, [data, isNew, reset, subject_id]);
 
   const submitHandler = (values: any) => {
     console.log('Value', values);
-    (isUpdate ? onEdit!(values) : onAdd!(values)).finally(() => {
+    onAdd!(values).finally(() => {
       if (onClose) {
         onClose();
       }
     });
   };
 
+  const handleDrop = useCallback(
+    (acceptedFiles) => {
+      const file = acceptedFiles[0];
+
+      if (file) {
+        setValue(
+          'imageUrl',
+          Object.assign(file, {
+            preview: URL.createObjectURL(file),
+          })
+        );
+      }
+    },
+    [setValue]
+  );
+
   return (
     <>
-      {/* <span
-        onClick={() => {
-          setOpen(true);
-        }}
-      >setValue('id', data?.id!);
-        {trigger}
-      </span> */}
       <Dialog {...others} fullWidth maxWidth="sm" open={open!} onClose={onClose}>
-        <DialogTitle>{!isUpdate ? 'Tạo môn học' : 'Cập nhật môn học'}</DialogTitle>
+        <DialogTitle>{'Tạo chuyên ngành'}</DialogTitle>
         <DialogContent dividers>
-          {isLoading ? <CircularProgress /> : <FormProvider {...form}>{children}</FormProvider>}
+          <RHFTextField name="name" label="Tên chuyên ngành" />
+          <Box sx={{ mb: 5 }}>
+            <RHFUploadAvatar
+              name="imageUrl"
+              accept="image/*"
+              maxSize={3145728}
+              onDrop={handleDrop}
+            />
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} variant="outlined" color="inherit">
             {'Hủy'}
           </Button>
           <LoadingAsyncButton variant="contained" onClick={handleSubmit(submitHandler)}>
-            {isUpdate ? 'Cập nhật' : 'Tạo'}
+            {'Tạo'}
           </LoadingAsyncButton>
         </DialogActions>
       </Dialog>
@@ -114,4 +113,4 @@ const SubjectForm: React.FC<Props> = ({
   );
 };
 
-export default SubjectForm;
+export default MajorCreateForm;

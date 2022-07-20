@@ -196,8 +196,8 @@ const MetorListPage = () => {
       title: 'Thứ hạng',
       dataIndex: 'badge',
       render: (badge: any) => (
-        <Label color={badge === 1 ? 'info' : badge === 2 ? 'primary' : 'default'}>
-          {badge === 1 ? 'Senior' : badge === 2 ? 'Junior' : 'Fresher'}
+        <Label color={badge === 3 ? 'info' : badge === 2 ? 'primary' : 'default'}>
+          {badge === 3 ? 'Senior' : badge === 2 ? 'Junior' : 'Fresher'}
         </Label>
       ),
       hideInSearch: true,

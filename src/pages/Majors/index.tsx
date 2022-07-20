@@ -1,22 +1,39 @@
 /* eslint-disable camelcase */
 import plusFill from '@iconify/icons-eva/plus-fill';
 import { Icon } from '@iconify/react';
+import * as yup from 'yup';
 // material
-import { Avatar, Button, Card, Stack } from '@mui/material';
+import {
+  Avatar,
+  Box,
+  Button,
+  Card,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Grid,
+  Stack,
+} from '@mui/material';
 import DeleteConfirmDialog from 'components/DeleteConfirmDialog';
 import Page from 'components/Page';
 import ResoTable from 'components/ResoTable/ResoTable';
 import useLocales from 'hooks/useLocales';
 import { get } from 'lodash';
 import { useSnackbar } from 'notistack';
-import { useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 // components
 import majorApi from 'apis/major';
 import HeaderBreadcrumbs from 'components/HeaderBreadcrumbs';
-import { UseFormReturn } from 'react-hook-form';
+import { FormProvider, UseFormReturn, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { PATH_DASHBOARD } from 'routes/paths';
 import { TMajor } from 'types/major';
+import { RHFTextField, RHFUploadAvatar } from 'components/hook-form';
+import LoadingAsyncButton from 'components/LoadingAsyncButton';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { ref, getDownloadURL, uploadBytesResumable } from 'firebase/storage';
+import { storage } from 'config';
 
 function groupBy(list: any, keyGetter: any) {
   const map = new Map();
@@ -34,46 +51,90 @@ function groupBy(list: any, keyGetter: any) {
 
 const MajorListPage = () => {
   const navigate = useNavigate();
+  const [percent, setPercent] = useState(0);
   const { translate } = useLocales();
+  const [formModal, setFormModal] = useState(false);
   const { enqueueSnackbar } = useSnackbar();
   const [currentItem, setCurrentItem] = useState<TMajor | null>(null);
-  const ref = useRef<{ reload: Function; formControl: UseFormReturn<any> }>();
+  const refxerence = useRef<{ reload: Function; formControl: UseFormReturn<any> }>();
 
-  const deleteSubjectHandler = async () => {
-    await majorApi
-      .remove(currentItem?.id!)
-      .then(() => setCurrentItem(null))
-      .then(() => ref.current?.reload)
-      .then(() =>
-        enqueueSnackbar(`Xóa thành công`, {
-          variant: 'success',
-        })
-      )
-      .catch((err: any) => {
-        const errMsg = get(err.response, ['data', 'message'], `Có lỗi xảy ra. Vui lòng thử lại`);
-        enqueueSnackbar(errMsg, {
-          variant: 'error',
+  const schema = yup.object().shape({
+    name: yup.string().required('Name is required'),
+    // subjects: yup
+    //   .array()
+    //   .min(1, 'Vui lòng có ít nhất một sản phẩm')
+    //   .of(
+    //     yup.object().shape({
+    //       position: yup.string().required('Vui lòng chọn giá trị'),
+    //     })
+    //   ),
+  });
+
+  const methods = useForm<Partial<TMajor & { subjects: any[] }>>({
+    defaultValues: {
+      name: '',
+      imageUrl: '',
+      subjects: [],
+    },
+    resolver: yupResolver(schema),
+  });
+
+  const {
+    reset,
+    watch,
+    control,
+    setValue,
+    getValues,
+    handleSubmit,
+    formState: { isSubmitting, isDirty },
+  } = methods;
+
+  const onSubmit = async (major: any) => {
+    try {
+      await majorApi
+        .add(major!)
+        .then(() =>
+          enqueueSnackbar(`Thêm thành công`, {
+            variant: 'success',
+          })
+        )
+        .then(() => navigate(PATH_DASHBOARD.majors.list))
+        .catch((err: any) => {
+          const errMsg = get(err.response, ['data', 'message'], `Có lỗi xảy ra. Vui lòng thử lại`);
+          enqueueSnackbar(errMsg, {
+            variant: 'error',
+          });
         });
-      });
+    } catch (error) {
+      console.error(error);
+    }
   };
 
-  const updateCourseHandler = async () => {
-    await majorApi
-      .update(currentItem!)
-      .then(() => setCurrentItem(null))
-      .then(() => ref.current?.reload)
-      .then(() =>
-        enqueueSnackbar(`Cập nhât thành công`, {
-          variant: 'success',
-        })
-      )
-      .catch((err: any) => {
-        const errMsg = get(err.response, ['data', 'message'], `Có lỗi xảy ra. Vui lòng thử lại`);
-        enqueueSnackbar(errMsg, {
-          variant: 'error',
-        });
-      });
-  };
+  const handleDrop = useCallback(
+    (acceptedFiles) => {
+      const file = acceptedFiles[0];
+      const storageRef = ref(storage, `/files/${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
+
+          // update progress
+          setPercent(percent);
+        },
+        (err) => console.log(err),
+        () => {
+          // download url
+          getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+            console.log(url);
+            setValue('imageUrl', url);
+          });
+        }
+      );
+    },
+    [setValue]
+  );
 
   const columns = [
     {
@@ -121,26 +182,39 @@ const MajorListPage = () => {
         <Button
           key="create-subject"
           onClick={() => {
-            navigate(PATH_DASHBOARD.majors.new);
+            setFormModal(true);
           }}
           variant="contained"
           startIcon={<Icon icon={plusFill} />}
         >
           {`Tạo chuyên ngành`}
         </Button>,
-        <DeleteConfirmDialog
-          key={''}
-          open={Boolean(currentItem)}
-          onClose={() => setCurrentItem(null)}
-          onDelete={deleteSubjectHandler}
-          title={
-            <>
-              {translate('common.confirmDeleteTitle')} <strong>{currentItem?.name}</strong>
-            </>
-          }
-        />,
       ]}
     >
+      <Dialog fullWidth maxWidth="sm" open={formModal} onClose={() => setFormModal(false)}>
+        <FormProvider {...methods}>
+          <DialogTitle>{'Tạo chuyên ngành'}</DialogTitle>
+          <DialogContent dividers>
+            <RHFTextField name="name" label="Tên chuyên ngành" />
+            <Box sx={{ mb: 5 }}>
+              <RHFUploadAvatar
+                name="imageUrl"
+                accept="image/*"
+                maxSize={3145728}
+                onDrop={handleDrop}
+              />
+            </Box>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setFormModal(false)} variant="outlined" color="inherit">
+              {'Hủy'}
+            </Button>
+            <LoadingAsyncButton variant="contained" onClick={handleSubmit(onSubmit)}>
+              {'Tạo'}
+            </LoadingAsyncButton>
+          </DialogActions>
+        </FormProvider>
+      </Dialog>
       <Card>
         <Stack spacing={2}>
           <ResoTable

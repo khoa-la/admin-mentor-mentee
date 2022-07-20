@@ -155,7 +155,7 @@ export default function Router() {
               path: 'new',
               element: <MajorCreatePage />,
             },
-            { path: ':id', element: <UserEditForm /> },
+            { path: ':id', element: <UpdateMajorPage /> },
           ],
         },
         {
@@ -167,6 +167,17 @@ export default function Router() {
               element: <OrderListPage />,
             },
             { path: ':id', element: <OrderListPage /> },
+          ],
+        },
+        {
+          path: 'certificates',
+          children: [
+            { path: '', element: <CertificateListPage /> },
+            {
+              path: 'new',
+              element: <CertificateListPage />,
+            },
+            { path: ':id', element: <CertificateEditForm /> },
           ],
         },
         {
@@ -339,6 +350,11 @@ const AdminEditForm = Loadable(lazy(() => import('../pages/Admins/AdminEditForm'
 // MAJOR
 const MajorListPage = Loadable(lazy(() => import('../pages/Majors')));
 const MajorCreatePage = Loadable(lazy(() => import('../pages/Majors/CreateMajor')));
+const UpdateMajorPage = Loadable(lazy(() => import('../pages/Majors/UpdateMajor')));
 
 // ORDER
 const OrderListPage = Loadable(lazy(() => import('../pages/Orders')));
+const CertificateListPage = Loadable(lazy(() => import('../pages/Certificates')));
+const CertificateEditForm = Loadable(
+  lazy(() => import('../pages/Certificates/components/EditCertificateForm'))
+);

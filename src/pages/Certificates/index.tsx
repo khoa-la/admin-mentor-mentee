@@ -4,6 +4,7 @@ import eyeFill from '@iconify/icons-eva/eye-fill';
 import { Icon } from '@iconify/react';
 // material
 import {
+  Avatar,
   Badge,
   Box,
   Button,
@@ -32,9 +33,9 @@ import { useSnackbar } from 'notistack';
 import { useEffect, useRef, useState } from 'react';
 // components
 import { useNavigate } from 'react-router-dom';
-import courseApi from 'apis/course';
+import userApi from 'apis/user';
 import { PATH_DASHBOARD } from 'routes/paths';
-import { TCourse } from 'types/course';
+import { TUser } from 'types/user';
 import { FormProvider, useForm, UseFormReturn } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -46,17 +47,16 @@ import LoadingAsyncButton from 'components/LoadingAsyncButton';
 import { TabContext, TabList } from '@mui/lab';
 import { type } from 'os';
 import axios from 'axios';
-import request, { axiosInstance } from 'utils/axios';
+import request from 'utils/axios';
+import certificateApi from 'apis/certificate';
+import { CERTIFICATE_STATUS } from 'types/constant';
 
 const STATUS_OPTIONS = ['Tất cả', 'Đã duyệt', 'Chờ duyệt', 'Đã huỷ'];
 
-enum STATUS {
-  Draft = 1, //Mentor tạo khóa học nháp
-  Pending = 2, //Mentor đã submit khóa học, chờ duyệt
-  Waiting = 3, //Khóa học đã được duyệt chờ đủ mentee
-  CancelNotEnough = 4, //Khóa học kết thúc do không đủ thành viên
-  Start = 5,
-  End = 6,
+enum ROLE {
+  Mentee = 1,
+  Mentor = 2,
+  Admin = 3,
 }
 
 function groupBy(list: any, keyGetter: any) {
@@ -73,38 +73,32 @@ function groupBy(list: any, keyGetter: any) {
   return map;
 }
 
-const CourseListPage = () => {
+const CertificateListPage = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('1');
   const { translate } = useLocales();
   const { enqueueSnackbar } = useSnackbar();
-  const [currentItem, setCurrentItem] = useState<TCourse | null>(null);
+  const [currentItem, setCurrentItem] = useState<TUser | null>(null);
+  const [activeTab, setActiveTab] = useState('1');
   const ref = useRef<{ reload: Function; formControl: UseFormReturn<any> }>();
 
-  const { data: allData } = useQuery(
-    'courses',
-    () => courseApi.getCourses({ page: 1, size: 100 }),
-    {
-      select: (res) => res.data.data,
-    }
-  );
+  const { data: allData } = useQuery('certificates', () => certificateApi.getCertificates(), {
+    select: (res) => res.data.data,
+  });
+
   const result = groupBy(allData, (data: any) => data.status);
-  console.log('data', allData);
-  console.log('result', result);
+  console.log(result);
 
   const handleChange = (event: React.SyntheticEvent, newValue: string) => {
     ref.current?.formControl.setValue(
       'status',
       newValue === '2'
-        ? STATUS.Pending
+        ? CERTIFICATE_STATUS.Pending
         : newValue === '3'
-        ? STATUS.Waiting
+        ? CERTIFICATE_STATUS.Approved
         : newValue === '4'
-        ? STATUS.Start
-        : newValue === '5'
-        ? STATUS.End
-        : newValue === '6'
-        ? STATUS.CancelNotEnough
+        ? CERTIFICATE_STATUS.Denied
+        : newValue === '1'
+        ? null
         : ''
     );
     setActiveTab(newValue);
@@ -114,33 +108,25 @@ const CourseListPage = () => {
   const [isUpdate, setIsUpdate] = useState(false);
   const { id } = useParams();
 
-  const { data, isLoading } = useQuery(
-    ['course', currentItem],
-    () => courseApi.getCourseById(Number(currentItem)),
-    {
-      select: (res) => res.data,
-    }
-  );
-
   const schema = yup.object().shape({
     name: yup.string().required('Vui lòng nhập tên khoá học'),
   });
-  const courseForm = useForm<TCourse>({
+  const courseForm = useForm<TUser>({
     resolver: yupResolver(schema),
     shouldUnregister: true,
-    defaultValues: { ...data },
+    // defaultValues: { ...data },
   });
 
   const { handleSubmit, control, reset } = courseForm;
 
-  useEffect(() => {
-    if (data) {
-      reset(data);
-    }
-  }, [data, reset]);
+  // useEffect(() => {
+  //   if (data) {
+  //     reset(data);
+  //   }
+  // }, [data, reset]);
 
   const deleteSubjectHandler = () =>
-    courseApi
+    userApi
       .delete(currentItem?.id!)
       .then(() => setCurrentItem(null))
       .then(() => ref.current?.reload)
@@ -156,9 +142,9 @@ const CourseListPage = () => {
         });
       });
 
-  const updateCourseHandler = (course: TCourse) =>
-    courseApi
-      .update(course.id, course!)
+  const updateCourseHandler = (user: TUser) =>
+    userApi
+      .update(user!)
       .then(() => ref.current?.reload)
       .then(() =>
         enqueueSnackbar(`Cập nhât thành công`, {
@@ -179,61 +165,98 @@ const CourseListPage = () => {
       hideInSearch: true,
     },
     {
-      title: 'Tên khoá học',
+      title: 'Hình ảnh',
+      dataIndex: 'imageUrl',
+      hideInSearch: true,
+      render: (src: any, { title }: any) => (
+        <Avatar alt={title} src={src} style={{ width: '54px', height: '54px' }} />
+      ),
+    },
+    {
+      title: 'Tên chứng chỉ',
       dataIndex: 'name',
     },
     {
-      title: translate('common.table.isAvailable'),
-      dataIndex: 'status',
-      render: (status: any) => (
-        <Label
-          color={
-            status === 2
-              ? 'warning'
-              : status === 3
-              ? 'info'
-              : status === 5
-              ? 'secondary'
-              : status === 6
-              ? 'success'
-              : 'default'
-          }
-        >
-          {status === 2
-            ? 'Chờ duyệt'
-            : status === 5
-            ? translate('common.available')
-            : status === 3
-            ? 'Chờ đủ mentee'
-            : status === 6
-            ? 'Đã hoàn thành'
-            : 'Đã huỷ'}
-        </Label>
-      ),
-      hideInSearch: true,
+      title: 'Mentor',
+      dataIndex: 'mentor.fullName',
     },
     {
       title: 'Môn học',
       dataIndex: 'subject.name',
-      hideInSearch: true,
     },
+    // {s
+    //   title: 'Thứ hạng',
+    //   dataIndex: 'badge',
+    //   render: (badge: any) => (
+    //     <Label color={badge === 1 ? 'info' : badge === 2 ? 'primary' : 'default'}>
+    //       {badge === 1 ? 'Senior' : badge === 2 ? 'Junior' : 'Fresher'}
+    //     </Label>
+    //   ),
+    //   hideInSearch: true,
+    // },
     {
-      title: 'Giảng viên',
-      dataIndex: 'mentor.fullName',
+      title: 'Trạng thái',
+      dataIndex: 'status',
+      render: (status: any) => (
+        <Label color={status === 3 ? 'error' : status === 2 ? 'success' : 'info'}>
+          {status === 3 ? 'Bị từ chối' : status === 2 ? 'Đã duyệt' : 'Đợi duyệt'}
+        </Label>
+      ),
       hideInSearch: true,
     },
-    {
-      title: 'Học viên tối thiểu',
-      dataIndex: 'minQuantity',
-      render: (quantity: any) => <Label color={'default'}>{quantity}</Label>,
-      hideInSearch: true,
-    },
-    {
-      title: 'Học viên tối đa',
-      dataIndex: 'maxQuantity',
-      render: (quantity: any) => <Label color={'default'}>{quantity}</Label>,
-      hideInSearch: true,
-    },
+    // {
+    //   title: translate('common.table.isAvailable'),
+    //   dataIndex: 'status',
+    //   render: (status: any) => (
+    //     <Label
+    //       color={
+    //         status === 5
+    //           ? 'secondary'
+    //           : status === 2
+    //           ? 'error'
+    //           : status === 3
+    //           ? 'warning'
+    //           : status === 6
+    //           ? 'success'
+    //           : 'default'
+    //       }
+    //     >
+    //       {status === 5
+    //         ? translate('common.available')
+    //         : status === 2
+    //         ? 'Chờ duyệt'
+    //         : status === 3
+    //         ? 'Chờ đủ mentee'
+    //         : status === 6
+    //         ? 'Đã hoàn thành'
+    //         : 'Đã huỷ'}
+    //     </Label>
+    //   ),
+    //   renderFormItem: () => (
+    //     <SelectField
+    //       fullWidth
+    //       sx={{ minWidth: '150px' }}
+    //       options={[
+    //         {
+    //           label: 'Đang diễn ra',
+    //           value: '5',
+    //         },
+    //         {
+    //           label: 'Chờ đủ mentee',
+    //           value: '3',
+    //         },
+    //         {
+    //           label: 'Đã kết thúc',
+    //           value: '6',
+    //         },
+    //       ]}
+    //       name="status"
+    //       size="small"
+    //       label={translate('common.table.isAvailable')}
+    //     />
+    //   ),
+    //   hideInSearch: activeTab === '2' ? false : true,
+    // },
     // {
     //   title: 'Xác thực',
     //   dataIndex: 'isVerified',
@@ -251,10 +274,10 @@ const CourseListPage = () => {
     //   ),
     // },
     // {
-    //   title: 'Ngày',
-    //   dataIndex: 'createdAt',
-    //   valueType: 'date',
-    //   hideInTable: true,
+    //   title: 'Ngày sinh',
+    //   dataIndex: 'dayOfBirth',
+    //   valueType: 'datetime',
+    //   hideInSearch: true,
     // },
     // {
     //   title: 'Giờ',
@@ -262,18 +285,18 @@ const CourseListPage = () => {
     //   valueType: 'time',
     //   hideInTable: true,
     // },
-    {
-      title: 'Ngày bắt đầu',
-      dataIndex: 'startDate',
-      valueType: 'datetime',
-      hideInSearch: true,
-    },
-    {
-      title: 'Ngày kết thúc',
-      dataIndex: 'finishDate',
-      valueType: 'datetime',
-      hideInSearch: true,
-    },
+    // {
+    //   title: 'Ngày bắt đầu',
+    //   dataIndex: 'startDate',
+    //   valueType: 'datetime',
+    //   hideInSearch: true,
+    // },
+    // {
+    //   title: 'Ngày kết thúc',
+    //   dataIndex: 'finishDate',
+    //   valueType: 'datetime',
+    //   hideInSearch: true,
+    // },
     // {
     //   title: 'Ngày cập nhật',
     //   dataIndex: 'updateDate',
@@ -290,7 +313,7 @@ const CourseListPage = () => {
 
   return (
     <Page
-      title={`Khoá học`}
+      title={`Chứng chỉ`}
       isTable
       content={
         <HeaderBreadcrumbs
@@ -298,24 +321,14 @@ const CourseListPage = () => {
           links={[
             { name: `${translate('dashboard')}`, href: PATH_DASHBOARD.root },
             {
-              name: `Khoá học`,
-              href: PATH_DASHBOARD.courses.root,
+              name: `Chứng chỉ`,
+              href: PATH_DASHBOARD.certificates.root,
             },
             { name: `${translate('list')}` },
           ]}
         />
       }
       actions={() => [
-        // <Button
-        //   key="create-subject"
-        //   onClick={() => {
-        //     navigate(PATH_DASHBOARD.courses.new);
-        //   }}
-        //   variant="contained"
-        //   startIcon={<Icon icon={plusFill} />}
-        // >
-        //   {translate('pages.subjects.addBtn')}
-        // </Button>,
         <DeleteConfirmDialog
           key={''}
           open={Boolean(currentItem)}
@@ -323,7 +336,7 @@ const CourseListPage = () => {
           onDelete={deleteSubjectHandler}
           title={
             <>
-              {translate('common.confirmDeleteTitle')} <strong>{currentItem?.name}</strong>
+              {translate('common.confirmDeleteTitle')} <strong>{currentItem?.fullName}</strong>
             </>
           }
         />,
@@ -341,41 +354,29 @@ const CourseListPage = () => {
               <Tab
                 disableRipple
                 label={'Tất cả'}
-                icon={<Label color={'success'}>{allData?.length || 0}</Label>}
+                icon={<Label color={'info'}> {allData?.length} </Label>}
                 value="1"
                 sx={{ px: 2 }}
               />
               <Tab
-                label={'Chờ duyệt'}
-                icon={<Label color={'warning'}> {result.get(2)?.length || 0} </Label>}
+                disableRipple
+                label={'Đợi duyệt'}
+                icon={<Label color={'warning'}> {result.get(1)?.length || 0} </Label>}
                 value="2"
                 sx={{ px: 2 }}
               />
               <Tab
                 disableRipple
-                label={'Chờ đủ mentee'}
-                icon={<Label color={'info'}> {result.get(3)?.length || 0} </Label>}
+                label={'Đã duyệt'}
+                icon={<Label color={'success'}> {result.get(2)?.length || 0} </Label>}
                 value="3"
                 sx={{ px: 2 }}
               />
               <Tab
                 disableRipple
-                label={'Đang diễn ra'}
-                icon={<Label color={'secondary'}> {result.get(5)?.length || 0} </Label>}
+                label={'Bị từ chối'}
+                icon={<Label color={'error'}> {result.get(3)?.length || 0} </Label>}
                 value="4"
-                sx={{ px: 2 }}
-              />
-              <Tab
-                disableRipple
-                label={'Kết thúc'}
-                icon={<Label color={'success'}> {result.get(6)?.length || 0} </Label>}
-                value="5"
-                sx={{ px: 2 }}
-              />
-              <Tab
-                label={'Đã huỷ'}
-                icon={<Label color={'default'}> {result.get(4)?.length || 0} </Label>}
-                value="6"
                 sx={{ px: 2 }}
               />
             </TabList>
@@ -383,14 +384,16 @@ const CourseListPage = () => {
           <Stack spacing={2}>
             <ResoTable
               rowKey="id"
+              // defaultFilters={{
+              //   'role-id': 1,
+              // }}
               ref={ref}
-              onEdit={(course: any) => {
-                navigate(`${PATH_DASHBOARD.courses.root}/${course.id}`);
+              onEdit={(certificate: any) => {
+                navigate(`${PATH_DASHBOARD.certificates.root}/${certificate.id}`);
                 setIsUpdate(true);
               }}
-              onView={(course: any) => navigate(`${PATH_DASHBOARD.courses.root}/${course.id}/view`)}
-              getData={courseApi.getCourses}
-              onDelete={setCurrentItem}
+              getData={certificateApi.getCertificates}
+              // onDelete={setCurrentItem}
               columns={columns}
             />
           </Stack>
@@ -400,4 +403,4 @@ const CourseListPage = () => {
   );
 };
 
-export default CourseListPage;
+export default CertificateListPage;

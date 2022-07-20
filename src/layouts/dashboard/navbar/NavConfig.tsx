@@ -50,15 +50,20 @@ const navConfig = [
     items: [
       // ORDER
       {
-        title: 'order',
+        title: 'Đơn hàng',
         path: PATH_DASHBOARD.orders.list,
-        icon: ICONS.menuBook,
+        icon: ICONS.ecommerce,
       },
       // COURSE
       {
-        title: 'course',
+        title: 'Khóa học',
         path: PATH_DASHBOARD.courses.list,
         icon: ICONS.libraryBook,
+      },
+      {
+        title: 'Chứng chỉ',
+        path: PATH_DASHBOARD.certificates.list,
+        icon: ICONS.invoice,
       },
       // MENTOR
       {
@@ -79,7 +84,7 @@ const navConfig = [
     items: [
       // MAJOR
       {
-        title: 'major',
+        title: 'Chuyên ngành',
         path: PATH_DASHBOARD.majors.list,
         icon: ICONS.menuBook,
       },
@@ -87,7 +92,7 @@ const navConfig = [
       {
         title: 'subject',
         path: PATH_DASHBOARD.subjects.list,
-        icon: ICONS.menuBook,
+        icon: ICONS.menuItem,
       },
       // ADMIN
       {
