@@ -223,6 +223,12 @@ const CourseListPage = () => {
       hideInSearch: true,
     },
     {
+      title: 'Số lượng tham gia',
+      dataIndex: 'currentNumberMentee',
+      render: (quantity: any) => <Label color={'default'}>{quantity}</Label>,
+      hideInSearch: true,
+    },
+    {
       title: 'Học viên tối thiểu',
       dataIndex: 'minQuantity',
       render: (quantity: any) => <Label color={'default'}>{quantity}</Label>,
