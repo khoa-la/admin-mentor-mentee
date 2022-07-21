@@ -76,11 +76,10 @@ function CreateMajor() {
     //   ),
   });
 
-  const methods = useForm<Partial<TMajor & { subjects: any[] }>>({
+  const methods = useForm<any>({
     defaultValues: {
       name: '',
       imageUrl: '',
-      subjects: [],
     },
     resolver: yupResolver(schema),
   });
@@ -199,7 +198,7 @@ function CreateMajor() {
                       Môn học
                     </CardTitle>
                     <ModalSubjectForm
-                      selected={subjects?.map(({ id }) => id)}
+                      selected={subjects?.map((id: any) => id)}
                       onSubmit={handleAddProd}
                       trigger={<Button variant="outlined">Thêm môn học</Button>}
                     />

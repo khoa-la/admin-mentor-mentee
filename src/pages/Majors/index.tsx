@@ -70,11 +70,10 @@ const MajorListPage = () => {
     //   ),
   });
 
-  const methods = useForm<Partial<TMajor & { subjects: any[] }>>({
+  const methods = useForm<any>({
     defaultValues: {
       name: '',
       imageUrl: '',
-      subjects: [],
     },
     resolver: yupResolver(schema),
   });

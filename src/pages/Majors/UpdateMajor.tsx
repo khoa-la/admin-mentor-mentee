@@ -1,52 +1,25 @@
-import { useSnackbar } from 'notistack';
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import * as yup from 'yup';
-import { useLocation, useNavigate, useParams } from 'react-router-dom';
-import { TCourse } from 'types/course';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { Controller, FormProvider, useForm } from 'react-hook-form';
-import { PATH_DASHBOARD } from 'routes/paths';
-import {
-  Autocomplete,
-  Button,
-  Card,
-  Chip,
-  Grid,
-  InputAdornment,
-  MenuItem,
-  Stack,
-  styled,
-  TextField,
-  Typography,
-  Divider,
-  Box,
-} from '@mui/material';
-import { isBefore } from 'date-fns';
-import {
-  RHFTextField,
-  RHFEditor,
-  RHFUploadMultiFile,
-  RHFSwitch,
-  RHFRadioGroup,
-  RHFSelect,
-  RHFUploadSingleFile,
-  RHFUploadAvatar,
-} from 'components/hook-form';
-import { LoadingButton, MobileDateTimePicker, DateTimePicker } from '@mui/lab';
-import useLocales from 'hooks/useLocales';
-import { useQuery } from 'react-query';
-import subjectApi from 'apis/subject';
-import { AutoCompleteField, SelectField } from 'components/form';
-import request from 'utils/axios';
-import Page from 'components/Page';
-import HeaderBreadcrumbs from 'components/HeaderBreadcrumbs';
-import courseApi from 'apis/course';
+import { Box, Card, Grid, Stack, styled, Typography } from '@mui/material';
 import majorApi from 'apis/major';
-import { get, unionBy } from 'lodash';
-import ModalSubjectForm from './components/ModalSubjectForm';
-import { TMajor, TSubjectMajor } from 'types/major';
+import HeaderBreadcrumbs from 'components/HeaderBreadcrumbs';
+import { RHFTextField, RHFUploadAvatar } from 'components/hook-form';
 import LoadingAsyncButton from 'components/LoadingAsyncButton';
+import Page from 'components/Page';
+import { storage } from 'config';
+import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
+import useLocales from 'hooks/useLocales';
+import { get } from 'lodash';
+import { useSnackbar } from 'notistack';
+import React, { useCallback, useState } from 'react';
+import { FormProvider, useForm } from 'react-hook-form';
+import { useQuery } from 'react-query';
+import { useNavigate, useParams } from 'react-router-dom';
+import { PATH_DASHBOARD } from 'routes/paths';
+import { TMajor, TSubjectMajor } from 'types/major';
+import { TSubject } from 'types/subject';
+import * as yup from 'yup';
 import AddSubjectTable from './components/AddSubjectTable';
+import SubjectMajorCard from './components/SubjectMajorCard';
 
 // ----------------------------------------------------------------------
 
@@ -59,17 +32,22 @@ const CardTitle = styled(Typography)({
 
 function UpdateMajorPage() {
   const navigate = useNavigate();
-
+  const [percent, setPercent] = useState(0);
   const { translate } = useLocales();
   const { id } = useParams();
 
   const { enqueueSnackbar } = useSnackbar();
-  const { data: major } = useQuery(['major', Number(id)], () => majorApi.getMajorById(Number(id)));
+  const { data: major } = useQuery(['major', Number(id)], () => majorApi.getMajorById(Number(id)), {
+    select: (res) => res.data,
+  });
+  console.log('major', major);
   const majorMethod = useForm<any>({
     defaultValues: {
       ...major,
     },
   });
+  const majorDetail: TMajor = major as TMajor;
+  console.log('majorDetail', majorDetail);
 
   React.useEffect(() => {
     if (major) {
@@ -115,7 +93,7 @@ function UpdateMajorPage() {
   const onSubmit = async (major: any) => {
     try {
       await majorApi
-        .add(major!)
+        .update(major!)
         .then(() =>
           enqueueSnackbar(`Thêm thành công`, {
             variant: 'success',
@@ -133,26 +111,36 @@ function UpdateMajorPage() {
     }
   };
 
-  //   const handleAddProd = (ids: number[], selectedProds: any[]) => {
-  //     const allSelectedProds = unionBy(subjects, selectedProds, 'id');
-  //     const updateSelectedProds = allSelectedProds
-  //       .filter(({ id }: { id: number }) => ids.includes(id))
-  //       .map((p, idx) => ({ ...p }));
-  //     setSubjects([...updateSelectedProds]);
-  //   };
+  // const handleAddProd = (ids: number[], selectedProds: any[]) => {
+  //   const allSelectedProds = unionBy(subjects, selectedProds, 'id');
+  //   const updateSelectedProds = allSelectedProds
+  //     .filter(({ id }: { id: number }) => ids.includes(id))
+  //     .map((p, idx) => ({ ...p }));
+  //   setSubjects([...updateSelectedProds]);
+  // };
 
   const handleDrop = useCallback(
     (acceptedFiles) => {
       const file = acceptedFiles[0];
+      const storageRef = ref(storage, `/files/${file.name}`);
+      const uploadTask = uploadBytesResumable(storageRef, file);
+      uploadTask.on(
+        'state_changed',
+        (snapshot) => {
+          const percent = Math.round((snapshot.bytesTransferred / snapshot.totalBytes) * 100);
 
-      if (file) {
-        setValue(
-          'imageUrl',
-          Object.assign(file, {
-            preview: URL.createObjectURL(file),
-          })
-        );
-      }
+          // update progress
+          setPercent(percent);
+        },
+        (err) => console.log(err),
+        () => {
+          // download url
+          getDownloadURL(uploadTask.snapshot.ref).then((url) => {
+            console.log(url);
+            setValue('imageUrl', url);
+          });
+        }
+      );
     },
     [setValue]
   );
@@ -172,7 +160,7 @@ function UpdateMajorPage() {
                   name: `Chuyên ngành`,
                   href: PATH_DASHBOARD.majors.root,
                 },
-                { name: `Tạo chuyên ngành` },
+                { name: `Chi tiết chuyên ngành` },
               ]}
             />
           }
@@ -197,40 +185,16 @@ function UpdateMajorPage() {
                   <RHFTextField name="name" label="Tên chuyên ngành" />
                 </Stack>
               </Card>
+              <LoadingAsyncButton
+                disabled={!isDirty}
+                onClick={handleSubmit(onSubmit, console.log)}
+                type="submit"
+                variant="contained"
+              >
+                Lưu
+              </LoadingAsyncButton>
             </Grid>
-            <Grid item xs={12} md={8}>
-              <Stack spacing={3}>
-                <Card sx={{ p: 3 }}>
-                  <Stack
-                    spacing={1}
-                    direction="row"
-                    justifyContent="space-between"
-                    alignItems="center"
-                  >
-                    <CardTitle mb={2} variant="subtitle1">
-                      Môn học
-                    </CardTitle>
-                    {/* <ModalSubjectForm
-                      selected={subjects?.map(({ id }) => id)}
-                      onSubmit={handleAddProd}
-                      trigger={<Button variant="outlined">Thêm môn học</Button>}
-                    /> */}
-                  </Stack>
-                  <Box mt={2}>
-                    <AddSubjectTable control={control} />
-                  </Box>
-                </Card>
-
-                <LoadingAsyncButton
-                  disabled={!isDirty}
-                  onClick={handleSubmit(onSubmit, console.log)}
-                  type="submit"
-                  variant="contained"
-                >
-                  Lưu
-                </LoadingAsyncButton>
-              </Stack>
-            </Grid>
+            <SubjectMajorCard subjects={majorDetail?.subjects} id={Number(id)} />
           </Grid>
         </Page>
       </FormProvider>

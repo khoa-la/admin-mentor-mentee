@@ -198,7 +198,7 @@ const CertificateListPage = () => {
       title: 'Trạng thái',
       dataIndex: 'status',
       render: (status: any) => (
-        <Label color={status === 3 ? 'error' : status === 2 ? 'success' : 'info'}>
+        <Label color={status === 3 ? 'error' : status === 2 ? 'success' : 'warning'}>
           {status === 3 ? 'Bị từ chối' : status === 2 ? 'Đã duyệt' : 'Đợi duyệt'}
         </Label>
       ),
