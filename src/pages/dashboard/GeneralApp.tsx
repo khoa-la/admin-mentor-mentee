@@ -23,6 +23,8 @@ import {
 } from '../../sections/@dashboard/general/app';
 // assets
 import { SeoIllustration } from '../../assets';
+import { useQuery } from 'react-query';
+import statisticsApi from 'apis/statistics';
 
 // ----------------------------------------------------------------------
 
@@ -32,6 +34,11 @@ export default function GeneralApp() {
   const theme = useTheme();
 
   const { themeStretch } = useSettings();
+
+  const { data: statistics } = useQuery('statistics', () => statisticsApi.getStatistics());
+
+  const lastStatistics = statistics?.data[statistics?.data?.length - 1];
+  console.log(lastStatistics);
 
   return (
     <Page title="General: App">
@@ -60,9 +67,9 @@ export default function GeneralApp() {
 
           <Grid item xs={12} md={4}>
             <AppWidgetSummary
-              title="Total Active Users"
-              percent={2.6}
-              total={18765}
+              title="Total Week Users"
+              percent={lastStatistics?.weekUserGrowth}
+              total={lastStatistics?.totalWeekUser}
               chartColor={theme.palette.primary.main}
               chartData={[5, 18, 12, 51, 68, 11, 39, 37, 27, 20]}
             />
@@ -70,9 +77,9 @@ export default function GeneralApp() {
 
           <Grid item xs={12} md={4}>
             <AppWidgetSummary
-              title="Total Installed"
-              percent={0.2}
-              total={4876}
+              title="Total Week Courses"
+              percent={lastStatistics?.weekCourseGrowth}
+              total={lastStatistics?.totalWeekCourse}
               chartColor={theme.palette.chart.blue[0]}
               chartData={[20, 41, 63, 33, 28, 35, 50, 46, 11, 26]}
             />
@@ -80,15 +87,15 @@ export default function GeneralApp() {
 
           <Grid item xs={12} md={4}>
             <AppWidgetSummary
-              title="Total Downloads"
-              percent={-0.1}
-              total={678}
+              title="Total Week Orders"
+              percent={lastStatistics?.weekOrderGrowth}
+              total={lastStatistics?.totalWeekOrder}
               chartColor={theme.palette.chart.red[0]}
               chartData={[8, 9, 31, 8, 16, 37, 8, 33, 46, 31]}
             />
           </Grid>
 
-          <Grid item xs={12} md={6} lg={4}>
+          {/* <Grid item xs={12} md={6} lg={4}>
             <AppCurrentDownload
               title="Current Download"
               chartColors={[
@@ -104,11 +111,11 @@ export default function GeneralApp() {
                 { label: 'Android', value: 78343 },
               ]}
             />
-          </Grid>
+          </Grid> */}
 
-          <Grid item xs={12} md={6} lg={8}>
+          {/* <Grid item xs={12} md={6} lg={8}>
             <AppAreaInstalled
-              title="Area Installed"
+              title="Orders"
               subheader="(+43%) than last year"
               chartLabels={['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep']}
               chartData={[
@@ -128,9 +135,9 @@ export default function GeneralApp() {
                 },
               ]}
             />
-          </Grid>
+          </Grid> */}
 
-          <Grid item xs={12} lg={8}>
+          {/* <Grid item xs={12} lg={8}>
             <AppNewInvoice
               title="New Invoice"
               tableData={_appInvoices}
@@ -167,7 +174,7 @@ export default function GeneralApp() {
                 chartData={75}
               />
             </Stack>
-          </Grid>
+          </Grid> */}
         </Grid>
       </Container>
     </Page>
